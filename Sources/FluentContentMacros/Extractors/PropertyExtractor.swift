@@ -1,14 +1,13 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
+import FluentContentMacroShared
 
 /// Extracts and analyzes properties from Swift declarations
 struct PropertyExtractor {
     /// Known Fluent relationship property wrappers
-    static let knownRelationships: Set<String> = [
-        "Parent", "OptionalParent",
-        "Children", "OptionalChild",
-        "Siblings"
-    ]
+    static var knownRelationships: [String] {
+        FluentRelationship.allCases.map(\.rawValue)
+    }
 
     /// Information about a property extracted from a declaration
     typealias PropertyInfo = (name: String, type: String, isOptional: Bool, isArray: Bool, isRelationship: Bool)
@@ -49,8 +48,11 @@ struct PropertyExtractor {
                     return false
                 }
 
-                let relationshipMatches = attributeWrappers.filter { knownRelationships.contains($0) }
-                if !relationshipMatches.isEmpty, !relationshipMatches.contains(where: includedWrappers.contains) {
+                let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
+                let hasRelationship = !propertyRelationships.isEmpty
+                
+                // Skip if this property has a relationship that's not included
+                if hasRelationship && !propertyRelationships.contains(where: includedWrappers.contains) {
                     return false
                 }
 
@@ -71,7 +73,9 @@ struct PropertyExtractor {
                     return identType.name.text
                 }
 
-                let relationshipMatches = attributeWrappers.filter { knownRelationships.contains($0) }
+                let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
+                let hasRelationship = !propertyRelationships.isEmpty
+
                 let (baseType, isOpt, isArr) = TypeUtils.unwrapTypeLayers(typeAnno)
 
                 return (
@@ -79,7 +83,7 @@ struct PropertyExtractor {
                     type: baseType,
                     isOptional: isOpt,
                     isArray: isArr,
-                    isRelationship: !relationshipMatches.isEmpty
+                    isRelationship: hasRelationship
                 )
             }
     }

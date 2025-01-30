@@ -78,14 +78,8 @@ struct MacroArgumentParser {
                 return wrappersForCase(.parent)
             case "children":
                 return wrappersForCase(.children)
-            case "custom":
-                if let fnCall = memAccess.parent?.as(FunctionCallExprSyntax.self),
-                   let firstArg = fnCall.arguments.first?.expression.as(ArrayExprSyntax.self) {
-                    return firstArg.elements.compactMap {
-                        $0.expression.as(StringLiteralExprSyntax.self)?.segments.first?.description
-                    }
-                }
-                return []
+            case "both":
+                return wrappersForCase(.both)
             default:
                 return wrappersForCase(.parent)
             }
@@ -97,12 +91,8 @@ struct MacroArgumentParser {
                 return wrappersForCase(.parent)
             } else if calledName.hasSuffix("children") {
                 return wrappersForCase(.children)
-            } else if calledName.hasSuffix("custom") {
-                if let firstArg = fnCall.arguments.first?.expression.as(ArrayExprSyntax.self) {
-                    return firstArg.elements.compactMap {
-                        $0.expression.as(StringLiteralExprSyntax.self)?.segments.first?.description
-                    }
-                }
+            } else if calledName.hasSuffix("both") {
+                return wrappersForCase(.both)
             }
         }
 
@@ -110,14 +100,7 @@ struct MacroArgumentParser {
     }
 
     private static func wrappersForCase(_ choice: IncludedWrappers) -> [String] {
-        switch choice {
-        case .parent:
-            ["Parent", "OptionalParent"]
-        case .children:
-            ["Children", "OptionalChild", "Siblings"]
-        case let .custom(arr):
-            arr
-        }
+        FluentRelationship.wrappers(for: choice)
     }
 
     private static func findAccessLevel(in modifiers: DeclModifierListSyntax?) -> String {

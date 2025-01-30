@@ -8,18 +8,8 @@ public enum IncludedWrappers {
     /// Includes only child relationships (e.g., `@Children`, `@OptionalChild`, `@Siblings`).
     case children
 
-    /**
-     Specifies a custom array of property wrapper names.
-
-     Example:
-
-     ```swift
-     @FluentContent(includedWrappers: .custom(["Parent", "Children"]))
-     ```
-
-     - Parameter names: An array of Fluent property wrapper names to include.
-     */
-    case custom([String])
+    /// Includes both parent and child relationships.
+    case both
 }
 
 /// Defines the access level for the generated `Content` struct and `toContent()` method.
@@ -38,19 +28,4 @@ public enum AccessLevel: String {
 
     /// Private access level.
     case `private`
-
-    public func resolvedAccessLevel(modelAccess: String) -> String {
-        switch self {
-        case .matchModel:
-            modelAccess
-        case .public:
-            "public"
-        case .internal:
-            "internal"
-        case .fileprivate:
-            "fileprivate"
-        case .private:
-            "private"
-        }
-    }
 }

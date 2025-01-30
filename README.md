@@ -123,9 +123,9 @@ class MyModel: Model {
 
 #### Relationship Options
 
-- `.parent`: Include only parent relationships
-- `.children`: Include children and siblings relationships
-- `.custom(["Parent", "Children"])`: Specify custom relationship types to include
+- `.parent`: Include only parent relationships (`@Parent`, `@OptionalParent`)
+- `.children`: Include only child relationships (`@Children`, `@OptionalChild`, `@Siblings`)
+- `.both`: Include both parent and child relationships
 
 #### Access Level Options
 
@@ -176,15 +176,6 @@ There are several ways to handle this:
        
        @FluentContentIgnore
        @Children(for: \.$post) var comments: [Comment]
-   }
-   ```
-
-3. **Custom Relationship Selection**:
-   ```swift
-   @FluentContent(includedWrappers: .custom(["Parent"]))
-   class Comment {
-       @Parent(key: "post_id") var post: Post
-       @Parent(key: "author_id") var author: User
    }
    ```
 

@@ -337,11 +337,11 @@
                 }
             }
 
-            @Test("Handles custom relationship selection")
-            func handlesCustomRelationshipSelection() {
+            @Test("Handles both parent and child relationships")
+            func handlesBothRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .custom(["Parent", "Siblings"]))
+                    @FluentContent(includedWrappers: .both)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -360,6 +360,7 @@
 
                     public struct PostContent: CodableContent, Equatable {
                         public let author: UserContent
+                        public let comments: [CommentContent]
                         public let tags: [TagContent]
                     }
 
@@ -367,9 +368,56 @@
                         public func toContent() -> PostContent {
                             .init(
                                 author: author.toContent(),
+                                comments: comments.map {
+                                    $0.toContent()
+                                },
                                 tags: tags.map {
                                     $0.toContent()
                                 }
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes non-relationship properties with custom wrappers")
+            func includesNonRelationshipProperties() {
+                assertMacro {
+                    """
+                    @FluentContent(includedWrappers: .parent)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                        @CustomWrapper var title: String
+                        @Timestamp var createdAt: Date
+                        var normalProperty: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                        @CustomWrapper var title: String
+                        @Timestamp var createdAt: Date
+                        var normalProperty: String
+                    }
+
+                    public struct PostContent: CodableContent, Equatable {
+                        public let author: UserContent
+                        public let title: String
+                        public let createdAt: Date
+                        public let normalProperty: String
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                author: author.toContent(),
+                                title: title,
+                                createdAt: createdAt,
+                                normalProperty: normalProperty
                             )
                         }
                     }
