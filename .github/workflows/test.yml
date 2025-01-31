@@ -1,0 +1,30 @@
+name: test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request: { types: [opened, reopened, synchronize, ready_for_review] }
+  push: { branches: [ main ] }
+
+jobs:
+  test:
+    if: ${{ !(github.event.pull_request.draft || false) }}
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Run SwiftFormat Lint
+        if: github.event_name == 'pull_request'
+        run: |
+          chmod +x bins/swiftformat
+          Scripts/swift_format.sh -c
+      
+      - name: Run tests
+        env:
+          SWIFT_DETERMINISTIC_HASHING: 1
+        run: swift test --parallel 
