@@ -9,8 +9,8 @@ import Foundation
 
 public enum DefaultConfig: Sendable {
     public static let immutable = true
-    public static var includedWrappers: IncludedWrappers {
-        IncludedWrappers.children
+    public static var includeRelations: IncludeRelations {
+        IncludeRelations.children
     }
 
     public static var accessLevel: AccessLevel {

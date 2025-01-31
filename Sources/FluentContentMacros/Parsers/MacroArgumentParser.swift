@@ -8,7 +8,7 @@ import FluentContentMacroShared
 /// information from model declarations in the macro system.
 struct MacroArgumentParser {
     /// Configuration options parsed from macro arguments
-    typealias MacroConfig = (isImmutable: Bool, includedWrappers: [String], accessLevel: AccessLevel)
+    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel)
 
     /// Information about the model declaration being processed
     typealias ModelInfo = (name: String, members: MemberBlockSyntax?, accessLevel: String)
@@ -20,11 +20,11 @@ struct MacroArgumentParser {
         from attr: AttributeSyntax
     ) throws -> MacroConfig {
         var isImmutable = DefaultConfig.immutable
-        var wrapperNames = wrappersForCase(DefaultConfig.includedWrappers)
+        var relationNames = wrappersForCase(DefaultConfig.includeRelations)
         var accessLevel = DefaultConfig.accessLevel
 
         guard let args = attr.arguments?.as(LabeledExprListSyntax.self) else {
-            return (isImmutable, wrapperNames, accessLevel)
+            return (isImmutable, relationNames, accessLevel)
         }
 
         for arg in args {
@@ -34,9 +34,9 @@ struct MacroArgumentParser {
             if label == "immutable",
                let boolLit = expr.as(BooleanLiteralExprSyntax.self) {
                 isImmutable = boolLit.literal.text == "true"
-            } else if label == "includedWrappers" {
-                let parsed = try parseIncludedWrappers(expr)
-                wrapperNames = parsed
+            } else if label == "includeRelations" {
+                let parsed = try parseIncludeRelations(expr)
+                relationNames = parsed
             } else if label == "accessLevel" {
                 if let memAccess = expr.as(MemberAccessExprSyntax.self) {
                     let rawCaseName = memAccess.declName.baseName.text
@@ -47,7 +47,7 @@ struct MacroArgumentParser {
             }
         }
 
-        return (isImmutable, wrapperNames, accessLevel)
+        return (isImmutable, relationNames, accessLevel)
     }
 
     /// Extracts information about a model declaration.
@@ -68,7 +68,7 @@ struct MacroArgumentParser {
         return ("", nil, "")
     }
 
-    private static func parseIncludedWrappers(
+    private static func parseIncludeRelations(
         _ expr: some ExprSyntaxProtocol
     ) throws -> [String] {
         if let memAccess = expr.as(MemberAccessExprSyntax.self) {
@@ -99,7 +99,7 @@ struct MacroArgumentParser {
         return wrappersForCase(.parent)
     }
 
-    private static func wrappersForCase(_ choice: IncludedWrappers) -> [String] {
+    private static func wrappersForCase(_ choice: IncludeRelations) -> [String] {
         FluentRelationship.wrappers(for: choice)
     }
 

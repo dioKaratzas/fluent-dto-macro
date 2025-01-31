@@ -10,8 +10,8 @@ import FluentContentMacroShared
   If `true`, the generated `Content` struct uses `let` for its stored properties.
   If `false`, it uses `var`. Defaults to `true`.
 
-  - **includedWrappers**:
-  Specifies which Fluent property wrappers should be transformed into nested content.
+  - **includeRelations**:
+  Specifies which Fluent relationships should be transformed into nested content.
   Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...Content` types.
   Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentContentIgnore`.
   Defaults to `.children`.
@@ -25,7 +25,7 @@ import FluentContentMacroShared
   ```swift
   @FluentContent(
      immutable: true,
-     includedWrappers: .children,
+     includeRelations: .children,
      accessLevel: .public
   )
   public final class User: Model {
@@ -43,8 +43,8 @@ import FluentContentMacroShared
 public macro FluentContent(
     /// If `true`, the generated `Content` struct uses `let` instead of `var`.
     immutable: Bool = DefaultConfig.immutable,
-    /// Specifies which Fluent property wrappers to include in the generated content.
-    includedWrappers: IncludedWrappers = DefaultConfig.includedWrappers,
+    /// Specifies which Fluent relationships to include in the generated content.
+    includeRelations: IncludeRelations = DefaultConfig.includeRelations,
     /// The desired access level for the generated `Content` struct and `toContent()` method.
     accessLevel: AccessLevel = DefaultConfig.accessLevel
 ) = #externalMacro(

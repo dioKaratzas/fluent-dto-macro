@@ -9,9 +9,9 @@ enum FluentRelationship: String, CaseIterable {
     case optionalChild = "OptionalChild"
     case siblings = "Siblings"
 
-    /// Returns relationship wrappers based on the IncludedWrappers case
-    static func wrappers(for includedWrappers: IncludedWrappers) -> [String] {
-        switch includedWrappers {
+    /// Returns relationship wrappers based on the IncludeRelations case
+    static func wrappers(for includeRelations: IncludeRelations) -> [String] {
+        switch includeRelations {
         case .parent:
             return [FluentRelationship.parent.rawValue, FluentRelationship.optionalParent.rawValue]
         case .children:

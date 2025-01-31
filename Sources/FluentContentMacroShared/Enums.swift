@@ -1,7 +1,7 @@
 import Foundation
 
-/// Specifies which Fluent property wrappers should be included in the generated content.
-public enum IncludedWrappers {
+/// Specifies which Fluent relationships should be included in the generated content.
+public enum IncludeRelations {
     /// Includes only parent relationships (e.g., `@Parent`, `@OptionalParent`).
     case parent
 
