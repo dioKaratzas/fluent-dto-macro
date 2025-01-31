@@ -1,7 +1,9 @@
 # FluentContent
 
-[![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
+[![Swift](https://img.shields.io/badge/Swift-5.10-orange.svg)](https://swift.org)
 [![Vapor](https://img.shields.io/badge/Vapor-4.0-blue.svg)](https://vapor.codes)
+[![Tests](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml/badge.svg)](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml)
+[![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-content-macro)](https://github.com/dioKaratzas/fluent-content-macro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A powerful Swift macro that revolutionizes how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe Content DTOs, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
@@ -21,7 +23,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/karadzic/fluent-content-macro.git", from: "1.0.0")
+    .package(url: "https://github.com/dioKaratzas/fluent-content-macro.git", from: "1.0.0")
 ]
 
 targets: [
