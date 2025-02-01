@@ -211,7 +211,7 @@
             func includesOnlyParentRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .parent)
+                    @FluentContent(includeRelations: .parent)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -243,7 +243,7 @@
             func includesOnlyChildRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .children)
+                    @FluentContent(includeRelations: .children)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -277,7 +277,7 @@
             func handlesOptionalRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .parent)
+                    @FluentContent(includeRelations: .parent)
                     class Comment {
                         @OptionalParent(key: "post_id") var post: Post?
                     }
@@ -307,7 +307,7 @@
             func handlesSiblingsRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .children)
+                    @FluentContent(includeRelations: .children)
                     class User {
                         @Siblings(through: UserRole.self, from: \\.$user, to: \\.$role)
                         var roles: [Role]
@@ -341,7 +341,7 @@
             func handlesBothRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .both)
+                    @FluentContent(includeRelations: .both)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -385,7 +385,7 @@
             func includesNonRelationshipProperties() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .parent)
+                    @FluentContent(includeRelations: .parent)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -656,7 +656,7 @@
             func handlesEmptyStructWithRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includedWrappers: .children)
+                    @FluentContent(includeRelations: .children)
                     class EmptyWithRelations {
                         @Children(for: \\.$parent) var children: [Child]
                     }

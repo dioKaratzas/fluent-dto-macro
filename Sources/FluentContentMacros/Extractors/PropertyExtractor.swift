@@ -15,11 +15,11 @@ struct PropertyExtractor {
     /// Extracts properties from a member block, filtering based on included wrappers
     /// - Parameters:
     ///   - members: The member block to analyze
-    ///   - includedWrappers: List of wrapper names to include
+    ///   - includeRelations: List of wrapper names to include
     /// - Returns: Array of property information
     static func extractProperties(
         from members: MemberBlockSyntax?,
-        includedWrappers: [String]
+        includeRelations: [String]
     ) -> [PropertyInfo] {
         guard let members else {
             return []
@@ -52,7 +52,7 @@ struct PropertyExtractor {
                 let hasRelationship = !propertyRelationships.isEmpty
                 
                 // Skip if this property has a relationship that's not included
-                if hasRelationship && !propertyRelationships.contains(where: includedWrappers.contains) {
+                if hasRelationship && !propertyRelationships.contains(where: includeRelations.contains) {
                     return false
                 }
 

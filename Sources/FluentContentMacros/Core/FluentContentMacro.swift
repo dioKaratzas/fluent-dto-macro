@@ -12,7 +12,7 @@ import SwiftCompilerPlugin
 
  ## Features
  - Automatically includes normal fields (e.g. `@Field`, `@ID`)
- - Optionally includes relationship wrappers (e.g. `@Parent`, `@Children`) based on `includedWrappers`
+ - Optionally includes relationship wrappers (e.g. `@Parent`, `@Children`) based on `includeRelations`
  - Supports marking fields to ignore with `@FluentContentIgnore`
  - Configurable mutability with `immutable` parameter
  - Customizable access level
@@ -20,7 +20,7 @@ import SwiftCompilerPlugin
  ## Parameters
  - **immutable**: If `true`, the generated `Content` struct uses `let` for its stored properties.
    If `false`, it uses `var`. Defaults to `true`.
- - **includedWrappers**: Specifies which Fluent property wrappers should be transformed into nested content.
+ - **includeRelations**: Specifies which Fluent property wrappers should be transformed into nested content.
    Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...Content` types.
    Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentContentIgnore`.
    Defaults to `.children`.
@@ -31,7 +31,7 @@ import SwiftCompilerPlugin
  ```swift
  @FluentContent(
     immutable: true,
-    includedWrappers: .children,
+    includeRelations: .children,
     accessLevel: .public
  )
  public final class User: Model {
@@ -71,8 +71,8 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        // Parse the macro arguments => (immutable, includedWrappers => [String])
-        let (isImmutable, includedWrappers, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
+        // Parse the macro arguments => (immutable, includeRelations => [String])
+        let (isImmutable, includeRelations, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
 
         // Identify class or struct
         let (modelName, members, modelAccess) = MacroArgumentParser.extractModelDeclInfo(declaration: declaration)
@@ -84,7 +84,7 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
 
         // Build the "Content" struct
         let contentName = "\(modelName)Content"
-        let props = PropertyExtractor.extractProperties(from: members, includedWrappers: includedWrappers)
+        let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
         let structDecl = ContentStructBuilder.buildContentStruct(
             name: contentName,
             properties: props,
@@ -111,14 +111,14 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         conformingTo protocols: [SwiftSyntax.TypeSyntax],
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        let (_, includedWrappers, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
+        let (_, includeRelations, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
         let (modelName, members, modelAccess) = MacroArgumentParser.extractModelDeclInfo(declaration: declaration)
         guard !modelName.isEmpty else {
             return []
         }
 
         let methodAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
-        let props = PropertyExtractor.extractProperties(from: members, includedWrappers: includedWrappers)
+        let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
         let contentName = "\(modelName)Content"
 
         let methodDecl = ContentStructBuilder.buildToContentMethod(

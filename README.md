@@ -27,10 +27,12 @@ dependencies: [
 ]
 
 targets: [
-    .target(name: "YourTarget",
-            dependencies: [
-                .product(name: "FluentContentMacro", package: "fluent-content-macro")
-            ])
+    .target(
+        name: "YourTarget",
+        dependencies: [
+            .product(name: "FluentContentMacro", package: "fluent-content-macro")
+        ]
+    )
 ]
 ```
 
