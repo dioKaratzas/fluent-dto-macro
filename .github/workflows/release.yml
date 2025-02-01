@@ -14,7 +14,6 @@ on:
 
 jobs:
   create-release:
-    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -12,11 +12,6 @@ jobs:
   lint:
     if: ${{ !(github.event.pull_request.draft || false) }}
     runs-on: macos-15
-    strategy:
-      matrix:
-        command: [test, '']
-        platform: [MACOS]
-        xcode: ['16.0']
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,8 +31,7 @@ jobs:
   test:
     needs: lint
     if: ${{ !(github.event.pull_request.draft || false) }}
-    runs-on: ubuntu-latest
-    container: swift:6.0
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
         with:

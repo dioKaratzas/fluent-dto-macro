@@ -1,12 +1,13 @@
 #!/bin/sh
 
-SWIFT_VERSION=6.0
-CONFIG_FILE="$(dirname "$0")/configs/config.swiftformat" # Adjust path for CONFIG_FILE
-SWIFTFORMAT_CMD="$(dirname "$0")/bin/swiftformat" # Adjust path for SWIFTFORMAT_CMD
+# Get the real path of the script, resolving symlinks
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PARENT_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
 
-# Capturing the absolute path of the script
-SCRIPT_PATH="$(dirname "$0")/$(basename "$0")"
-PARENT_DIR=$(dirname "$(dirname "$SCRIPT_PATH")")
+SWIFT_VERSION=6.0
+CONFIG_FILE="$SCRIPT_DIR/configs/config.swiftformat"
+SWIFTFORMAT_CMD="$SCRIPT_DIR/bin/swiftformat"
 
 # Function to set green text color
 green_colorize() {
@@ -58,7 +59,6 @@ if ! command -v "$SWIFTFORMAT_CMD" >/dev/null; then
     exit 1
 fi
 
-# No need to change directory now, as paths are absolute
 # Process command-line options
 if [ -z "$1" ]; then
     show_choices
@@ -66,10 +66,10 @@ else
     case $1 in
         -l)
             echo "> Lint all files without making changes..."
-            $SWIFTFORMAT_CMD $PARENT_DIR --lint --config "$CONFIG_FILE" --swiftversion $SWIFT_VERSION ;;
+            $SWIFTFORMAT_CMD "$PARENT_DIR" --lint --config "$CONFIG_FILE" --swiftversion $SWIFT_VERSION ;;
         -a)
             echo "> Apply format to all files..."
-            $SWIFTFORMAT_CMD $PARENT_DIR --config "$CONFIG_FILE" --swiftversion $SWIFT_VERSION ;;
+            $SWIFTFORMAT_CMD "$PARENT_DIR" --config "$CONFIG_FILE" --swiftversion $SWIFT_VERSION ;;
         -c)
             echo "> Apply format to changed files only..."
             git diff --diff-filter=d --name-only --line-prefix=$(git rev-parse --show-toplevel)/ $(git merge-base origin/develop HEAD) | grep "\.swift" | while read filename; do

@@ -50,9 +50,9 @@ struct PropertyExtractor {
 
                 let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
                 let hasRelationship = !propertyRelationships.isEmpty
-                
+
                 // Skip if this property has a relationship that's not included
-                if hasRelationship && !propertyRelationships.contains(where: includeRelations.contains) {
+                if hasRelationship, !propertyRelationships.contains(where: includeRelations.contains) {
                     return false
                 }
 
