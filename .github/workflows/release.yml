@@ -12,6 +12,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -25,18 +28,30 @@ jobs:
         run: |
           echo "### What's Changed" >> release_notes.md
           echo "" >> release_notes.md
-          git log $(git describe --tags --abbrev=0 2>/dev/null || echo HEAD^)..HEAD --pretty=format:"* %s" >> release_notes.md
+          # Get the last tag or HEAD^ if no tags exist
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD^)
+          
+          # Group commits by type and format them nicely
+          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): */    Added: /')" >> release_notes.md
+          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^fix(\([^)]+\))?:' | sed 's/^fix\([^)]*\): */    Fixed: /')" >> release_notes.md
+          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^ci(\([^)]+\))?:' | sed 's/^ci\([^)]*\): */    Infrastructure: /')" >> release_notes.md
+          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^docs(\([^)]+\))?:' | sed 's/^docs\([^)]*\): */    Documentation: /')" >> release_notes.md
+          
+          echo "" >> release_notes.md
+          echo "Full Changelog: $LAST_TAG...${{ github.event.inputs.version }}" >> release_notes.md
           
       - name: Create Tag
         run: |
-          git tag v${{ github.event.inputs.version }}
-          git push origin v${{ github.event.inputs.version }}
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git tag ${{ github.event.inputs.version }}
+          git push origin ${{ github.event.inputs.version }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          name: Release v${{ github.event.inputs.version }}
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
           body_path: release_notes.md
           draft: false
           prerelease: false
