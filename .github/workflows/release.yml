@@ -11,6 +11,10 @@ on:
         description: 'Version number (e.g., 1.0.0)'
         required: true
         type: string
+      previous_version:
+        description: 'Previous version (leave empty for first release)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -22,23 +26,68 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
+      
+      - name: Fetch full history
+        run: |
+          git fetch --prune --unshallow || true
+          git fetch --tags
       
       - name: Generate Release Notes
         id: release_notes
         run: |
           echo "### What's Changed" >> release_notes.md
           echo "" >> release_notes.md
-          # Get the last tag or HEAD^ if no tags exist
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo HEAD^)
           
-          # Group commits by type and format them nicely
-          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): */    Added: /')" >> release_notes.md
-          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^fix(\([^)]+\))?:' | sed 's/^fix\([^)]*\): */    Fixed: /')" >> release_notes.md
-          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^ci(\([^)]+\))?:' | sed 's/^ci\([^)]*\): */    Infrastructure: /')" >> release_notes.md
-          echo "$(git log $LAST_TAG..HEAD --pretty=format:'%s' | grep -E '^docs(\([^)]+\))?:' | sed 's/^docs\([^)]*\): */    Documentation: /')" >> release_notes.md
+          # Determine the range for changelog
+          if [ -n "${{ github.event.inputs.previous_version }}" ]; then
+            LAST_TAG="${{ github.event.inputs.previous_version }}"
+            GIT_LOG_RANGE="$LAST_TAG..HEAD"
+            RANGE="$LAST_TAG..${{ github.event.inputs.version }}"
+          else
+            # For first release, get all history
+            LAST_TAG=$(git rev-list --max-parents=0 HEAD)
+            GIT_LOG_RANGE="HEAD"
+            RANGE=""
+          fi
           
-          echo "" >> release_notes.md
-          echo "Full Changelog: $LAST_TAG...${{ github.event.inputs.version }}" >> release_notes.md
+          # Check for breaking changes first
+          BREAKING=$(git log $GIT_LOG_RANGE --pretty=format:'%s' | grep -E '!:|BREAKING CHANGE:' | sed 's/^.*!: */    💥 Breaking: /')
+          if [ ! -z "$BREAKING" ]; then
+            echo "### ⚠️ Breaking Changes" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "$BREAKING" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
+          # Features and Fixes
+          FEATURES=$(git log $GIT_LOG_RANGE --pretty=format:'%s' | grep -E '^feat(\([^)]+\))?:' | sed 's/^feat\([^)]*\): */    ✨ /')
+          if [ ! -z "$FEATURES" ]; then
+            echo "### 🚀 Features" >> release_notes.md
+            echo "$FEATURES" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
+          FIXES=$(git log $GIT_LOG_RANGE --pretty=format:'%s' | grep -E '^fix(\([^)]+\))?:' | sed 's/^fix\([^)]*\): */    🐛 /')
+          if [ ! -z "$FIXES" ]; then
+            echo "### 🔧 Bug Fixes" >> release_notes.md
+            echo "$FIXES" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
+          # Performance and Refactoring
+          PERF=$(git log $GIT_LOG_RANGE --pretty=format:'%s' | grep -E '^perf(\([^)]+\))?:' | sed 's/^perf\([^)]*\): */    ⚡️ /')
+          REFACTOR=$(git log $GIT_LOG_RANGE --pretty=format:'%s' | grep -E '^refactor(\([^)]+\))?:' | sed 's/^refactor\([^)]*\): */    ♻️ /')
+          if [ ! -z "$PERF$REFACTOR" ]; then
+            echo "### 🔨 Improvements" >> release_notes.md
+            echo "$PERF$REFACTOR" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
+          # Only show full changelog for non-first releases
+          if [ -n "${{ github.event.inputs.previous_version }}" ]; then
+            echo "Full Changelog: $RANGE" >> release_notes.md
+          fi
           
       - name: Create Tag
         run: |
