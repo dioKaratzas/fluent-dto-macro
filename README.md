@@ -6,16 +6,16 @@
 [![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-content-macro)](https://github.com/dioKaratzas/fluent-content-macro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A powerful Swift macro that revolutionizes how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe Content DTOs, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
+A powerful Swift macro that revolutionizes how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe content structures, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
 
 ## ✨ Highlights
 
-- 🚀 **Zero Boilerplate** - Automatic DTO generation with a single macro
-- 🔄 **Smart Relationships** - Intelligent handling of all Fluent relationship types
+- 🚀 **Reduced Boilerplate** - Automatic content structure generation with a simple macro
+- 🔄 **Basic Relationships** - Support for common Fluent relationship types
 - 🛡️ **Type Safety** - Compile-time checking and immutable structures by default
 - 🎯 **Flexible Control** - Fine-grained control over included relationships
 - 🔒 **Security First** - Easy exclusion of sensitive fields
-- 🎨 **Clean Architecture** - Perfect separation of database and API concerns
+- 🎨 **Clean Architecture** - Clear separation of database and API concerns
 
 ## 📦 Installation
 
@@ -64,16 +64,28 @@ func getUser(_ req: Request) async throws -> UserContent {
 ## ⚙️ Configuration
 
 ### Relationship Control
-Choose which relationships to include in your DTOs:
+Choose which relationships to include in your content structures:
 ```swift
 // Only include child relationships (default)
 @FluentContent(includeRelations: .children)
+final class Post: Model {
+    @Children(for: \.$post) var comments: [Comment]
+    @Parent(key: "author_id") var author: User  // Will be ignored
+}
 
 // Only include parent relationships
 @FluentContent(includeRelations: .parent)
+final class Comment: Model {
+    @Parent(key: "post_id") var post: Post
+    @Children(for: \.$comment) var reactions: [Reaction]  // Will be ignored
+}
 
 // Include both parent and child relationships
 @FluentContent(includeRelations: .both)
+final class Category: Model {
+    @Parent(key: "parent_id") var parent: Category
+    @Children(for: \.$parent) var subcategories: [Category]
+}
 ```
 
 ### Immutability
@@ -81,9 +93,31 @@ Control property mutability:
 ```swift
 // Immutable properties with 'let' (default)
 @FluentContent(immutable: true)
+final class Product: Model {
+    @ID var id: UUID?
+    @Field(key: "name") var name: String
+    @Field(key: "price") var price: Double
+}
+// Generated with 'let' properties:
+// struct ProductContent {
+//     let id: UUID?
+//     let name: String
+//     let price: Double
+// }
 
 // Mutable properties with 'var'
 @FluentContent(immutable: false)
+final class Cart: Model {
+    @ID var id: UUID?
+    @Field(key: "total") var total: Double
+    @Parent(key: "user_id") var user: User
+}
+// Generated with 'var' properties:
+// struct CartContent {
+//     var id: UUID?
+//     var total: Double
+//     var user: UserContent
+// }
 ```
 
 ### Access Control
@@ -91,11 +125,43 @@ Set visibility levels:
 ```swift
 // Public access (default)
 @FluentContent(accessLevel: .public)
+final class Article: Model {
+    @ID var id: UUID?
+    @Field(key: "title") var title: String
+}
+// Generated with public access:
+// public struct ArticleContent { ... }
+// public func toContent() -> ArticleContent { ... }
 
-// Other options
+// Internal access
 @FluentContent(accessLevel: .internal)
+final class Draft: Model {
+    @ID var id: UUID?
+    @Field(key: "content") var content: String
+}
+// Generated with internal access:
+// struct DraftContent { ... }
+// func toContent() -> DraftContent { ... }
+
+// FilePrivate access for internal caching
 @FluentContent(accessLevel: .fileprivate)
+final class Cache: Model {
+    @ID var id: UUID?
+    @Field(key: "data") var data: Data
+}
+// Generated with fileprivate access:
+// fileprivate struct CacheContent { ... }
+// fileprivate func toContent() -> CacheContent { ... }
+
+// Private access for implementation details
 @FluentContent(accessLevel: .private)
+final class InternalLog: Model {
+    @ID var id: UUID?
+    @Field(key: "message") var message: String
+}
+// Generated with private access:
+// private struct InternalLogContent { ... }
+// private func toContent() -> InternalLogContent { ... }
 ```
 
 ### Field Exclusion
@@ -104,7 +170,7 @@ Protect sensitive data:
 final class User: Model {
     @Field(key: "email") var email: String
     
-    @FluentContentIgnore  // Exclude from Content DTO
+    @FluentContentIgnore  // Exclude from generated content structure
     @Field(key: "password_hash") var passwordHash: String
 }
 ```
