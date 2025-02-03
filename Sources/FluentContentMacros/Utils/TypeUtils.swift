@@ -29,24 +29,24 @@ enum TypeUtils {
     static func unwrapTypeLayers(
         _ typeSyntax: TypeSyntax
     ) -> TypeInfo {
-        var isOpt = false
-        var isArr = false
+        var isOptional = false
+        var isArray = false
         var current = typeSyntax
 
         while let optType = current.as(OptionalTypeSyntax.self) {
-            isOpt = true
+            isOptional = true
             current = optType.wrappedType
         }
         while let arrType = current.as(ArrayTypeSyntax.self) {
-            isArr = true
+            isArray = true
             current = arrType.element
         }
 
         if let ident = current.as(IdentifierTypeSyntax.self) {
-            return (ident.name.text, isOpt, isArr)
+            return (ident.name.text, isOptional, isArray)
         }
 
         let text = current.description.trimmingCharacters(in: .whitespacesAndNewlines)
-        return (text, isOpt, isArr)
+        return (text, isOptional, isArray)
     }
 }

@@ -51,6 +51,23 @@ final class User: Model {
     @Field(key: "name") var name: String
     @Children(for: \.$user) var posts: [Post]
 }
+
+// The macro generates:
+public struct UserContent: CodableContent, Equatable {
+    public let id: UUID?
+    public let name: String
+    public let posts: [PostContent]
+}
+
+extension User {
+    public func toContent() -> UserContent {
+        .init(
+            id: id,
+            name: name,
+            posts: posts.map { $0.toContent() }
+        )
+    }
+}
 ```
 
 3️⃣ Use the generated content:
