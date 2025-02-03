@@ -6,7 +6,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-content-macro)](https://github.com/dioKaratzas/fluent-content-macro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A powerful Swift macro that revolutionizes how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe content structures, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
+A Swift macro that simplifies how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe content structures, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
 
 ## ✨ Highlights
 
@@ -36,7 +36,7 @@ targets: [
 ]
 ```
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 1️⃣ Import the package:
 ```swift
