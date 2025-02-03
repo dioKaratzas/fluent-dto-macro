@@ -71,32 +71,28 @@ struct MacroArgumentParser {
     private static func parseIncludeRelations(
         _ expr: some ExprSyntaxProtocol
     ) throws -> [String] {
-        if let memAccess = expr.as(MemberAccessExprSyntax.self) {
-            let caseName = memAccess.declName.baseName.text
-            switch caseName {
-            case "parent":
-                return wrappersForCase(.parent)
-            case "children":
-                return wrappersForCase(.children)
-            case "both":
-                return wrappersForCase(.both)
-            default:
-                return wrappersForCase(.parent)
+        let relationText: String? = {
+            if let memAccess = expr.as(MemberAccessExprSyntax.self) {
+                return memAccess.declName.baseName.text
+            } else if let fnCall = expr.as(FunctionCallExprSyntax.self) {
+                return fnCall.calledExpression.description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
-        }
+            return nil
+        }()
 
-        if let fnCall = expr.as(FunctionCallExprSyntax.self) {
-            let calledName = fnCall.calledExpression.description.trimmingCharacters(in: .whitespacesAndNewlines)
-            if calledName.hasSuffix("parent") {
-                return wrappersForCase(.parent)
-            } else if calledName.hasSuffix("children") {
-                return wrappersForCase(.children)
-            } else if calledName.hasSuffix("both") {
-                return wrappersForCase(.both)
+        let relation: IncludeRelations = {
+            guard let text = relationText else {
+                return .parent
             }
-        }
+            switch text {
+            case let text where text.hasSuffix("parent"): return .parent
+            case let text where text.hasSuffix("children"): return .children
+            case let text where text.hasSuffix("both"): return .both
+            default: return .parent
+            }
+        }()
 
-        return wrappersForCase(.parent)
+        return wrappersForCase(relation)
     }
 
     private static func wrappersForCase(_ choice: IncludeRelations) -> [String] {

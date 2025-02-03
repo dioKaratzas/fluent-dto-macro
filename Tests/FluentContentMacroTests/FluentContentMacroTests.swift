@@ -207,8 +207,8 @@
         // MARK: - 2️⃣ Relationship Tests
         @Suite("Relationship Handling")
         struct RelationshipTests {
-            @Test("Includes only parent relationships")
-            func includesOnlyParentRelationships() {
+            @Test("Includes only parent relationships with dot notation")
+            func includesOnlyParentRelationshipsWithDot() {
                 assertMacro {
                     """
                     @FluentContent(includeRelations: .parent)
@@ -239,8 +239,40 @@
                 }
             }
 
-            @Test("Includes only child relationships")
-            func includesOnlyChildRelationships() {
+            @Test("Includes only parent relationships with fully qualified enum")
+            func includesOnlyParentRelationshipsWithFullEnum() {
+                assertMacro {
+                    """
+                    @FluentContent(includeRelations: IncludeRelations.parent)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+
+                    public struct PostContent: CodableContent, Equatable {
+                        public let author: UserContent
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                author: author.toContent()
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes only child relationships with dot notation")
+            func includesOnlyChildRelationshipsWithDot() {
                 assertMacro {
                     """
                     @FluentContent(includeRelations: .children)
@@ -263,6 +295,112 @@
                     extension Post {
                         public func toContent() -> PostContent {
                             .init(
+                                comments: comments.map {
+                                    $0.toContent()
+                                }
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes only child relationships with fully qualified enum")
+            func includesOnlyChildRelationshipsWithFullEnum() {
+                assertMacro {
+                    """
+                    @FluentContent(includeRelations: IncludeRelations.children)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+
+                    public struct PostContent: CodableContent, Equatable {
+                        public let comments: [CommentContent]
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                comments: comments.map {
+                                    $0.toContent()
+                                }
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes both relationships with dot notation")
+            func includesBothRelationshipsWithDot() {
+                assertMacro {
+                    """
+                    @FluentContent(includeRelations: .both)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+
+                    public struct PostContent: CodableContent, Equatable {
+                        public let author: UserContent
+                        public let comments: [CommentContent]
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                author: author.toContent(),
+                                comments: comments.map {
+                                    $0.toContent()
+                                }
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes both relationships with fully qualified enum")
+            func includesBothRelationshipsWithFullEnum() {
+                assertMacro {
+                    """
+                    @FluentContent(includeRelations: IncludeRelations.both)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                    }
+
+                    public struct PostContent: CodableContent, Equatable {
+                        public let author: UserContent
+                        public let comments: [CommentContent]
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                author: author.toContent(),
                                 comments: comments.map {
                                     $0.toContent()
                                 }
@@ -328,50 +466,6 @@
                         public func toContent() -> UserContent {
                             .init(
                                 roles: roles.map {
-                                    $0.toContent()
-                                }
-                            )
-                        }
-                    }
-                    """
-                }
-            }
-
-            @Test("Handles both parent and child relationships")
-            func handlesBothRelationships() {
-                assertMacro {
-                    """
-                    @FluentContent(includeRelations: .both)
-                    class Post {
-                        @Parent(key: "author_id") var author: User
-                        @Children(for: \\.$post) var comments: [Comment]
-                        @Siblings(through: PostTag.self, from: \\.$post, to: \\.$tag)
-                        var tags: [Tag]
-                    }
-                    """
-                } expansion: {
-                    """
-                    class Post {
-                        @Parent(key: "author_id") var author: User
-                        @Children(for: \\.$post) var comments: [Comment]
-                        @Siblings(through: PostTag.self, from: \\.$post, to: \\.$tag)
-                        var tags: [Tag]
-                    }
-
-                    public struct PostContent: CodableContent, Equatable {
-                        public let author: UserContent
-                        public let comments: [CommentContent]
-                        public let tags: [TagContent]
-                    }
-
-                    extension Post {
-                        public func toContent() -> PostContent {
-                            .init(
-                                author: author.toContent(),
-                                comments: comments.map {
-                                    $0.toContent()
-                                },
-                                tags: tags.map {
                                     $0.toContent()
                                 }
                             )

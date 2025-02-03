@@ -13,10 +13,6 @@ struct PropertyExtractor {
     typealias PropertyInfo = (name: String, type: String, isOptional: Bool, isArray: Bool, isRelationship: Bool)
 
     /// Extracts properties from a member block, filtering based on included wrappers
-    /// - Parameters:
-    ///   - members: The member block to analyze
-    ///   - includeRelations: List of wrapper names to include
-    /// - Returns: Array of property information
     static func extractProperties(
         from members: MemberBlockSyntax?,
         includeRelations: [String]
@@ -26,65 +22,87 @@ struct PropertyExtractor {
         }
 
         return members.members
-            .filter { member in
-                guard
-                    let varDecl = member.decl.as(VariableDeclSyntax.self),
-                    let binding = varDecl.bindings.first,
-                    let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-                    let typeAnno = binding.typeAnnotation?.type else {
-                    return false
-                }
+            .filter { shouldIncludeProperty($0, includeRelations: includeRelations) }
+            .map(extractPropertyInfo)
+    }
 
-                let attributeWrappers: [String] = varDecl.attributes.compactMap { element in
-                    guard
-                        let attrSyntax = element.as(AttributeSyntax.self),
-                        let identType = attrSyntax.attributeName.as(IdentifierTypeSyntax.self) else {
-                        return nil
-                    }
-                    return identType.name.text
-                }
+    // MARK: - Private Helpers
 
-                if attributeWrappers.contains("FluentContentIgnore") {
-                    return false
-                }
+    /// Determines if a property should be included in the generated content
+    private static func shouldIncludeProperty(
+        _ member: MemberBlockItemSyntax,
+        includeRelations: [String]
+    ) -> Bool {
+        guard let propertyDecl = extractPropertyDeclaration(from: member) else {
+            return false
+        }
 
-                let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
-                let hasRelationship = !propertyRelationships.isEmpty
+        let attributeWrappers = extractAttributeWrappers(from: propertyDecl.decl.attributes)
 
-                // Skip if this property has a relationship that's not included
-                if hasRelationship, !propertyRelationships.contains(where: includeRelations.contains) {
-                    return false
-                }
+        // Skip if property is marked to be ignored
+        if attributeWrappers.contains("FluentContentIgnore") {
+            return false
+        }
 
-                return true
+        // Check relationship compatibility
+        let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
+        let hasRelationship = !propertyRelationships.isEmpty
+
+        // Skip if property has a relationship that's not included
+        if hasRelationship, !propertyRelationships.contains(where: includeRelations.contains) {
+            return false
+        }
+
+        return true
+    }
+
+    /// Extracts property declaration from a member syntax
+    private static func extractPropertyDeclaration(
+        from member: MemberBlockItemSyntax
+    ) -> (decl: VariableDeclSyntax, binding: PatternBindingSyntax)? {
+        guard
+            let varDecl = member.decl.as(VariableDeclSyntax.self),
+            let binding = varDecl.bindings.first,
+            let _ = binding.pattern.as(IdentifierPatternSyntax.self),
+            let _ = binding.typeAnnotation?.type else {
+            return nil
+        }
+        return (varDecl, binding)
+    }
+
+    /// Extracts attribute wrappers from property attributes
+    private static func extractAttributeWrappers(
+        from attributes: AttributeListSyntax
+    ) -> [String] {
+        attributes.compactMap { element in
+            guard
+                let attrSyntax = element.as(AttributeSyntax.self),
+                let identType = attrSyntax.attributeName.as(IdentifierTypeSyntax.self) else {
+                return nil
             }
-            .map { member in
-                let varDecl = member.decl.as(VariableDeclSyntax.self)!
-                let binding = varDecl.bindings.first!
-                let pattern = binding.pattern.as(IdentifierPatternSyntax.self)!
-                let typeAnno = binding.typeAnnotation!.type
+            return identType.name.text
+        }
+    }
 
-                let attributeWrappers: [String] = varDecl.attributes.compactMap { element in
-                    guard
-                        let attrSyntax = element.as(AttributeSyntax.self),
-                        let identType = attrSyntax.attributeName.as(IdentifierTypeSyntax.self) else {
-                        return nil
-                    }
-                    return identType.name.text
-                }
+    /// Extracts property information from a member declaration
+    private static func extractPropertyInfo(
+        _ member: MemberBlockItemSyntax
+    ) -> PropertyInfo {
+        let (varDecl, binding) = extractPropertyDeclaration(from: member)!
+        let pattern = binding.pattern.as(IdentifierPatternSyntax.self)!
+        let typeAnno = binding.typeAnnotation!.type
 
-                let propertyRelationships = attributeWrappers.filter { knownRelationships.contains($0) }
-                let hasRelationship = !propertyRelationships.isEmpty
+        let attributeWrappers = extractAttributeWrappers(from: varDecl.attributes)
+        let hasRelationship = !attributeWrappers.filter { knownRelationships.contains($0) }.isEmpty
 
-                let (baseType, isOpt, isArr) = TypeUtils.unwrapTypeLayers(typeAnno)
+        let (baseType, isOptional, isArray) = TypeUtils.unwrapTypeLayers(typeAnno)
 
-                return (
-                    name: pattern.identifier.text,
-                    type: baseType,
-                    isOptional: isOpt,
-                    isArray: isArr,
-                    isRelationship: hasRelationship
-                )
-            }
+        return (
+            name: pattern.identifier.text,
+            type: baseType,
+            isOptional: isOptional,
+            isArray: isArray,
+            isRelationship: hasRelationship
+        )
     }
 }
