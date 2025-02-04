@@ -23,11 +23,11 @@ struct ContentStructBuilder {
 
         return if propertyLines.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             """
-            \(access) struct \(name): CodableContent, Equatable {}
+            \(access) struct \(name): CodableContent, Equatable, Sendable {}
             """
         } else {
             """
-            \(access) struct \(name): CodableContent, Equatable {
+            \(access) struct \(name): CodableContent, Equatable, Sendable {
             \(propertyLines)
             }
             """

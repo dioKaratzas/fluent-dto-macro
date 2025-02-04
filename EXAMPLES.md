@@ -29,6 +29,12 @@ final class Book: Model {
     init() {}
 }
 
+// Generated structs would try to include each other infinitely:
+// struct AuthorContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let book: BookContent?  // Contains AuthorContent which contains BookContent...
+// }
+
 // ✅ DO: Use array relationships instead
 @FluentContent(includeRelations: .both)
 final class Author: Model {
@@ -36,6 +42,12 @@ final class Author: Model {
     @Children(for: \.$author) var books: [Book]     // Array breaks the cycle
     init() {}
 }
+
+// Generated struct is clean:
+// struct AuthorContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let books: [BookContent]
+// }
 ```
 
 ### 2. Complex Relationship Cycles
@@ -72,9 +84,18 @@ final class Student: Model {
     @Parent(key: "advisor_id") var advisor: Professor
     @Children(for: \.$student) var theses: [Thesis]  // Use array
 }
+
+// Generated structs are cycle-free:
+// struct ProfessorContent: CodableContent, Equatable, Sendable {
+//     let students: [StudentContent]
+// }
+// struct StudentContent: CodableContent, Equatable, Sendable {
+//     let advisor: ProfessorContent
+//     let theses: [ThesisContent]
+// }
 ```
 
-### 3. Self-referential Traps
+### 3. Self-referential Structures
 Self-referential models require special attention:
 
 ```swift
@@ -91,6 +112,11 @@ final class Employee: Model {
     @OptionalParent(key: "manager_id") var manager: Employee?
     @Children(for: \.$manager) var subordinates: [Employee]
 }
+
+// Generated struct is clean:
+// struct EmployeeContent: CodableContent, Equatable, Sendable {
+//     let subordinates: [EmployeeContent]
+// }
 ```
 
 ## ✅ Recommended Patterns
@@ -112,6 +138,13 @@ final class Employee: Model {
     @Parent(key: "department_id") var department: Department
     @Siblings(through: ProjectAssignment.self, from: \.$employee, to: \.$project) var projects: [Project]
 }
+
+// Generated structs:
+// struct DepartmentContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let employees: [EmployeeContent]
+//     let projects: [ProjectContent]
+// }
 ```
 
 ### 2. Many-to-Many Relationships
@@ -129,6 +162,16 @@ final class Tag: Model {
     @ID var id: UUID?
     @Siblings(through: BookTag.self, from: \.$tag, to: \.$book) var books: [Book]
 }
+
+// Generated structs:
+// struct BookContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let tags: [TagContent]
+// }
+// struct TagContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let books: [BookContent]
+// }
 ```
 
 ## 🔄 Advanced Scenarios
@@ -158,6 +201,15 @@ final class Team: Model {
 final class Employee: Model {
     @Parent(key: "team_id") var team: Team
 }
+
+// Generated structs maintain hierarchy:
+// struct OrganizationContent: CodableContent, Equatable, Sendable {
+//     let departments: [DepartmentContent]
+// }
+// struct DepartmentContent: CodableContent, Equatable, Sendable {
+//     let organization: OrganizationContent
+//     let teams: [TeamContent]
+// }
 ```
 
 ### 2. Complex Self-referential Structures
@@ -171,6 +223,14 @@ final class Category: Model {
     @Children(for: \.$parent) var subcategories: [Category]
     @Siblings(through: ProductCategory.self, from: \.$category, to: \.$product) var products: [Product]
 }
+
+// Generated struct handles self-reference:
+// struct CategoryContent: CodableContent, Equatable, Sendable {
+//     let id: UUID?
+//     let parent: CategoryContent?
+//     let subcategories: [CategoryContent]
+//     let products: [ProductContent]
+// }
 ```
 
 ## 🎯 Key Takeaways

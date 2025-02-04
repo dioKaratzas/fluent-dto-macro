@@ -16,6 +16,7 @@ A Swift macro that simplifies how you handle Vapor Fluent models in your API res
 - 🎯 **Flexible Control** - Fine-grained control over included relationships
 - 🔒 **Security First** - Easy exclusion of sensitive fields
 - 🎨 **Clean Architecture** - Clear separation of database and API concerns
+- 🧵 **Concurrency Ready** - Generated content structures automatically conform to Sendable
 
 ## 📦 Installation
 
@@ -53,7 +54,7 @@ final class User: Model {
 }
 
 // The macro generates:
-public struct UserContent: CodableContent, Equatable {
+public struct UserContent: CodableContent, Equatable, Sendable {
     public let id: UUID?
     public let name: String
     public let posts: [PostContent]
@@ -116,7 +117,7 @@ final class Product: Model {
     @Field(key: "price") var price: Double
 }
 // Generated with 'let' properties:
-// struct ProductContent {
+// struct ProductContent: CodableContent, Equatable, Sendable {
 //     let id: UUID?
 //     let name: String
 //     let price: Double
@@ -130,7 +131,7 @@ final class Cart: Model {
     @Parent(key: "user_id") var user: User
 }
 // Generated with 'var' properties:
-// struct CartContent {
+// struct CartContent: CodableContent, Equatable, Sendable {
 //     var id: UUID?
 //     var total: Double
 //     var user: UserContent
@@ -147,7 +148,7 @@ final class Article: Model {
     @Field(key: "title") var title: String
 }
 // Generated with public access:
-// public struct ArticleContent { ... }
+// public struct ArticleContent: CodableContent, Equatable, Sendable { ... }
 // public func toContent() -> ArticleContent { ... }
 
 // Internal access
@@ -157,7 +158,7 @@ final class Draft: Model {
     @Field(key: "content") var content: String
 }
 // Generated with internal access:
-// struct DraftContent { ... }
+// struct DraftContent: CodableContent, Equatable, Sendable { ... }
 // func toContent() -> DraftContent { ... }
 
 // FilePrivate access for internal caching
@@ -167,7 +168,7 @@ final class Cache: Model {
     @Field(key: "data") var data: Data
 }
 // Generated with fileprivate access:
-// fileprivate struct CacheContent { ... }
+// fileprivate struct CacheContent: CodableContent, Equatable, Sendable { ... }
 // fileprivate func toContent() -> CacheContent { ... }
 
 // Private access for implementation details
@@ -177,7 +178,7 @@ final class InternalLog: Model {
     @Field(key: "message") var message: String
 }
 // Generated with private access:
-// private struct InternalLogContent { ... }
+// private struct InternalLogContent: CodableContent, Equatable, Sendable { ... }
 // private func toContent() -> InternalLogContent { ... }
 ```
 

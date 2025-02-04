@@ -27,7 +27,7 @@
                     """
                     class EmptyModel {}
 
-                    public struct EmptyModelContent: CodableContent, Equatable {
+                    public struct EmptyModelContent: CodableContent, Equatable, Sendable {
                     }
 
                     extension EmptyModel {
@@ -56,7 +56,7 @@
                         var body: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let title: String
                         public let body: String
                     }
@@ -102,7 +102,7 @@
                         var data: Data
                     }
 
-                    public struct AllPrimitivesContent: CodableContent, Equatable {
+                    public struct AllPrimitivesContent: CodableContent, Equatable, Sendable {
                         public let string: String
                         public let int: Int
                         public let double: Double
@@ -148,7 +148,7 @@
                         var age: Int
                     }
 
-                    public struct MutableModelContent: CodableContent, Equatable {
+                    public struct MutableModelContent: CodableContent, Equatable, Sendable {
                         public var name: String
                         public var age: Int
                     }
@@ -184,7 +184,7 @@
                         var scores: [Int]?
                     }
 
-                    public struct UserContent: CodableContent, Equatable {
+                    public struct UserContent: CodableContent, Equatable, Sendable {
                         public let name: String?
                         public let tags: [String]
                         public let scores: [Int]?
@@ -224,7 +224,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let author: UserContent
                     }
 
@@ -256,7 +256,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let author: UserContent
                     }
 
@@ -288,7 +288,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let comments: [CommentContent]
                     }
 
@@ -322,7 +322,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let comments: [CommentContent]
                     }
 
@@ -356,7 +356,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let author: UserContent
                         public let comments: [CommentContent]
                     }
@@ -392,7 +392,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let author: UserContent
                         public let comments: [CommentContent]
                     }
@@ -426,7 +426,7 @@
                         @OptionalParent(key: "post_id") var post: Post?
                     }
 
-                    public struct CommentContent: CodableContent, Equatable {
+                    public struct CommentContent: CodableContent, Equatable, Sendable {
                         public let post: PostContent?
                     }
 
@@ -458,7 +458,7 @@
                         var roles: [Role]
                     }
 
-                    public struct UserContent: CodableContent, Equatable {
+                    public struct UserContent: CodableContent, Equatable, Sendable {
                         public let roles: [RoleContent]
                     }
 
@@ -498,7 +498,7 @@
                         var normalProperty: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let author: UserContent
                         public let title: String
                         public let createdAt: Date
@@ -538,7 +538,7 @@
                         var title: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable {
+                    public struct PostContent: CodableContent, Equatable, Sendable {
                         public let title: String
                     }
 
@@ -568,7 +568,7 @@
                         var title: String
                     }
 
-                    internal struct PostContent: CodableContent, Equatable {
+                    internal struct PostContent: CodableContent, Equatable, Sendable {
                         internal let title: String
                     }
 
@@ -598,7 +598,7 @@
                         var title: String
                     }
 
-                    fileprivate struct PostContent: CodableContent, Equatable {
+                    fileprivate struct PostContent: CodableContent, Equatable, Sendable {
                         fileprivate let title: String
                     }
 
@@ -628,7 +628,7 @@
                         var id: UUID?
                     }
 
-                    public struct BaseModelContent: CodableContent, Equatable {
+                    public struct BaseModelContent: CodableContent, Equatable, Sendable {
                         public let id: UUID?
                     }
 
@@ -665,7 +665,7 @@
                         var password: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable {
+                    public struct UserContent: CodableContent, Equatable, Sendable {
                         public let username: String
                     }
 
@@ -721,7 +721,7 @@
                         var posts: [Post]
                     }
 
-                    public struct UserContent: CodableContent, Equatable {
+                    public struct UserContent: CodableContent, Equatable, Sendable {
                         public let id: UUID?
                         public let username: String
                         public let posts: [PostContent]
@@ -761,7 +761,7 @@
                         @Children(for: \\.$parent) var children: [Child]
                     }
 
-                    public struct EmptyWithRelationsContent: CodableContent, Equatable {
+                    public struct EmptyWithRelationsContent: CodableContent, Equatable, Sendable {
                         public let children: [ChildContent]
                     }
 
@@ -797,7 +797,7 @@
                         var arrayOptDict: [[String: Int?]]
                     }
 
-                    public struct ComplexModelContent: CodableContent, Equatable {
+                    public struct ComplexModelContent: CodableContent, Equatable, Sendable {
                         public let simpleDict: [String: Int]
                         public let optArrayDict: [String: [Int]]?
                         public let arrayOptDict: [[String: Int?]]
@@ -835,7 +835,7 @@
                         var optionalArray: [String]?
                     }
 
-                    public struct NestedOptionalsContent: CodableContent, Equatable {
+                    public struct NestedOptionalsContent: CodableContent, Equatable, Sendable {
                         public let maybeArray: [String?]?
                         public let arrayOfOptionals: [String?]
                         public let optionalArray: [String]?
@@ -901,7 +901,7 @@
                         var compositeId: CompositeID
                     }
 
-                    public struct AllWrappersContent: CodableContent, Equatable {
+                    public struct AllWrappersContent: CodableContent, Equatable, Sendable {
                         public let id: UUID?
                         public let name: String
                         public let status: Status
