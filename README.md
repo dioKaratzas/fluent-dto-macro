@@ -1,6 +1,6 @@
 # FluentContent
 
-[![Swift](https://img.shields.io/badge/Swift-5.10-orange.svg)](https://swift.org)
+[![Swift](https://img.shields.io/badge/Swift-5.9%20%7C%206-orange.svg)](https://swift.org)
 [![Vapor](https://img.shields.io/badge/Vapor-4.0-blue.svg)](https://vapor.codes)
 [![Tests](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml/badge.svg)](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml)
 [![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-content-macro)](https://github.com/dioKaratzas/fluent-content-macro/releases/latest)
