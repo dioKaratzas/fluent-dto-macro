@@ -1,15 +1,24 @@
 import Foundation
 
 /// Specifies which Fluent relationships should be included in the generated content.
-public enum IncludeRelations: Sendable {
-    /// Includes only parent relationships (e.g., `@Parent`, `@OptionalParent`).
-    case parent
+public struct IncludeRelations: OptionSet, Sendable {
+    public let rawValue: Int
 
-    /// Includes only child relationships (e.g., `@Children`, `@OptionalChild`, `@Siblings`).
-    case children
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+    /// Includes parent relationships (e.g., `@Parent`, `@OptionalParent`).
+    public static let parent = IncludeRelations(rawValue: 1 << 0)
+
+    /// Includes child relationships (e.g., `@Children`, `@OptionalChild`, `@Siblings`).
+    public static let children = IncludeRelations(rawValue: 1 << 1)
 
     /// Includes both parent and child relationships.
-    case both
+    public static let all: IncludeRelations = [.parent, .children]
+
+    /// Includes no relationships.
+    public static let none: IncludeRelations = []
 }
 
 /// Defines the access level for the generated `Content` struct and `toContent()` method.

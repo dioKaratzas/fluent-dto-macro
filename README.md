@@ -99,10 +99,24 @@ final class Comment: Model {
 }
 
 // Include both parent and child relationships
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Category: Model {
     @Parent(key: "parent_id") var parent: Category
     @Children(for: \.$parent) var subcategories: [Category]
+}
+
+// Include no relationships
+@FluentContent(includeRelations: .none)
+final class Settings: Model {
+    @Parent(key: "user_id") var user: User  // Will be ignored
+    @Children(for: \.$settings) var logs: [Log]  // Will be ignored
+}
+
+// Mix and match relationships
+@FluentContent(includeRelations: [.parent, .children])  // Same as .all
+final class CustomModel: Model {
+    @Parent(key: "parent_id") var parent: Parent
+    @Children(for: \.$parent) var children: [Child]
 }
 ```
 
@@ -218,7 +232,7 @@ Configure default behavior for all @FluentContent usages in your app:
 ```swift
 // In your app's setup code
 FluentContentDefaults.immutable = false        // Make all content types mutable by default
-FluentContentDefaults.includeRelations = .both // Include all relationships by default
+FluentContentDefaults.includeRelations = .all  // Include all relationships by default
 FluentContentDefaults.accessLevel = .internal  // Use internal access by default
 FluentContentDefaults.conformances = [.equatable, .hashable]  // Default protocol conformances
 

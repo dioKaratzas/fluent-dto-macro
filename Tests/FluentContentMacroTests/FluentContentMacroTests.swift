@@ -240,8 +240,8 @@
                 }
             }
 
-            @Test("Includes only parent relationships with fully qualified enum")
-            func includesOnlyParentRelationshipsWithFullEnum() {
+            @Test("Includes only parent relationships with fully qualified type")
+            func includesOnlyParentRelationshipsWithFullType() {
                 assertMacro {
                     """
                     @FluentContent(includeRelations: IncludeRelations.parent)
@@ -272,8 +272,8 @@
                 }
             }
 
-            @Test("Includes only child relationships with dot notation")
-            func includesOnlyChildRelationshipsWithDot() {
+            @Test("Includes only children relationships")
+            func includesOnlyChildrenRelationships() {
                 assertMacro {
                     """
                     @FluentContent(includeRelations: .children)
@@ -306,45 +306,11 @@
                 }
             }
 
-            @Test("Includes only child relationships with fully qualified enum")
-            func includesOnlyChildRelationshipsWithFullEnum() {
+            @Test("Includes both parent and children relationships with array syntax")
+            func includesBothRelationshipsWithArray() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: IncludeRelations.children)
-                    class Post {
-                        @Parent(key: "author_id") var author: User
-                        @Children(for: \\.$post) var comments: [Comment]
-                    }
-                    """
-                } expansion: {
-                    """
-                    class Post {
-                        @Parent(key: "author_id") var author: User
-                        @Children(for: \\.$post) var comments: [Comment]
-                    }
-
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let comments: [CommentContent]
-                    }
-
-                    extension Post {
-                        public func toContent() -> PostContent {
-                            .init(
-                                comments: comments.map {
-                                    $0.toContent()
-                                }
-                            )
-                        }
-                    }
-                    """
-                }
-            }
-
-            @Test("Includes both relationships with dot notation")
-            func includesBothRelationshipsWithDot() {
-                assertMacro {
-                    """
-                    @FluentContent(includeRelations: .both)
+                    @FluentContent(includeRelations: [.parent, .children])
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -376,11 +342,11 @@
                 }
             }
 
-            @Test("Includes both relationships with fully qualified enum")
-            func includesBothRelationshipsWithFullEnum() {
+            @Test("Includes both parent and children relationships with .all")
+            func includesBothRelationshipsWithAll() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: IncludeRelations.both)
+                    @FluentContent(includeRelations: .all)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -405,6 +371,40 @@
                                 comments: comments.map {
                                     $0.toContent()
                                 }
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Includes no relationships with .none")
+            func includesNoRelationshipsWithNone() {
+                assertMacro {
+                    """
+                    @FluentContent(includeRelations: .none)
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                        var title: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class Post {
+                        @Parent(key: "author_id") var author: User
+                        @Children(for: \\.$post) var comments: [Comment]
+                        var title: String
+                    }
+
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                        public let title: String
+                    }
+
+                    extension Post {
+                        public func toContent() -> PostContent {
+                            .init(
+                                title: title
                             )
                         }
                     }

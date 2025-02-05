@@ -15,14 +15,14 @@ The most common issue occurs when creating bidirectional relationships with opti
 
 ```swift
 // ❌ DON'T: Creates infinite size error
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Author: Model {
     @ID var id: UUID?
     @OptionalChild(for: \.$author) var book: Book?  // Single optional relationship
     init() {}
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Book: Model {
     @ID var id: UUID?
     @Parent(key: "author_id") var author: Author    // Creates cycle
@@ -36,7 +36,7 @@ final class Book: Model {
 // }
 
 // ✅ DO: Use array relationships instead
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Author: Model {
     @ID var id: UUID?
     @Children(for: \.$author) var books: [Book]     // Array breaks the cycle
@@ -48,26 +48,25 @@ final class Author: Model {
 //     let id: UUID?
 //     let books: [BookContent]
 // }
-```
 
 ### 2. Complex Relationship Cycles
 Multi-model cycles can create subtle issues:
 
 ```swift
 // ❌ DON'T: Three-way cycle with optional relationships
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Student: Model {
     @OptionalParent(key: "advisor_id") var advisor: Professor?
     @OptionalChild(for: \.$student) var thesis: Thesis?
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Professor: Model {
     @Children(for: \.$advisor) var students: [Student]
     @OptionalChild(for: \.$reviewer) var reviewingThesis: Thesis?
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Thesis: Model {
     @Parent(key: "student_id") var student: Student
     @OptionalParent(key: "reviewer_id") var reviewer: Professor?
@@ -99,15 +98,15 @@ final class Student: Model {
 Self-referential models require special attention:
 
 ```swift
-// ❌ DON'T: Bidirectional self-reference with .both
-@FluentContent(includeRelations: .both)
+// ❌ DON'T: Bidirectional self-reference with .all
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Employee: Model {
     @OptionalParent(key: "manager_id") var manager: Employee?
     @Children(for: \.$manager) var subordinates: [Employee]
 }
 
 // ✅ DO: Use selective inclusion or arrays
-@FluentContent(includeRelations: .children)
+@FluentContent(includeRelations: .children)  // Only include child relationships
 final class Employee: Model {
     @OptionalParent(key: "manager_id") var manager: Employee?
     @Children(for: \.$manager) var subordinates: [Employee]
@@ -125,7 +124,7 @@ final class Employee: Model {
 Array relationships provide the most reliable behavior:
 
 ```swift
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Department: Model {
     @ID var id: UUID?
     @Children(for: \.$department) var employees: [Employee]
@@ -151,13 +150,13 @@ final class Employee: Model {
 Siblings relationships work exceptionally well:
 
 ```swift
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Book: Model {
     @ID var id: UUID?
     @Siblings(through: BookTag.self, from: \.$book, to: \.$tag) var tags: [Tag]
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Tag: Model {
     @ID var id: UUID?
     @Siblings(through: BookTag.self, from: \.$tag, to: \.$book) var books: [Book]
@@ -185,13 +184,13 @@ final class Organization: Model {
     @Children(for: \.$organization) var departments: [Department]
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Department: Model {
     @Parent(key: "org_id") var organization: Organization
     @Children(for: \.$department) var teams: [Team]
 }
 
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Team: Model {
     @Parent(key: "department_id") var department: Department
     @Children(for: \.$team) var members: [Employee]
@@ -216,7 +215,7 @@ final class Employee: Model {
 Safe handling of hierarchical self-references:
 
 ```swift
-@FluentContent(includeRelations: .both)
+@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
 final class Category: Model {
     @ID var id: UUID?
     @OptionalParent(key: "parent_id") var parent: Category?
@@ -243,7 +242,7 @@ final class Category: Model {
 2. **Relationship Direction**
    - Choose a primary direction for relationships
    - Use selective inclusion (`.parent`, `.children`) strategically
-   - Avoid `.both` unless necessary
+   - Avoid `.all` unless necessary
 
 3. **Cycle Prevention**
    - Break cycles using array relationships
