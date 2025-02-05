@@ -1,0 +1,45 @@
+name: Check Macro Compatibility
+
+on: 
+  workflow_dispatch:
+    inputs:
+      run-tests:
+        description: 'Run tests during compatibility check'
+        type: boolean
+        default: true
+      major-versions-only:
+        description: 'Test only major versions (509.0.0, 510.0.0, 600.0.0)'
+        type: boolean
+        default: false
+      verbose:
+        description: 'Enable verbose output'
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      run-tests:
+        description: 'Run tests during compatibility check'
+        type: boolean
+        default: false
+      major-versions-only:
+        description: 'Test only major versions (509.0.0, 510.0.0, 600.0.0)'
+        type: boolean
+        default: true
+      verbose:
+        description: 'Enable verbose output'
+        type: boolean
+        default: false
+
+jobs:
+  check-macro-compatibility:
+    name: Check Macro Compatibility
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Swift Macro Compatibility Check
+        uses: Matejkob/swift-macro-compatibility-check@v1
+        with:
+          run-tests: ${{ inputs.run-tests }}
+          major-versions-only: ${{ inputs.major-versions-only }}
+          verbose: ${{ inputs.verbose }} 

@@ -28,8 +28,16 @@ jobs:
           fi
           echo "::endgroup::"
 
-  test:
+  check-macro-compatibility:
     needs: lint
+    uses: ./.github/workflows/check-macro-compatibility.yml
+    with:
+      run-tests: false
+      major-versions-only: true
+      verbose: false
+
+  test:
+    needs: check-macro-compatibility
     if: ${{ !(github.event.pull_request.draft || false) }}
     runs-on: macos-15
     steps:
