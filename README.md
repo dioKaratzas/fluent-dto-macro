@@ -81,6 +81,27 @@ func getUser(_ req: Request) async throws -> UserContent {
 
 ## ⚙️ Configuration
 
+### Content Type Names
+Choose your preferred naming convention for generated types:
+```swift
+// Default behavior - generates UserContent, PostContent, etc.
+@FluentContent
+final class User: Model {
+    @ID var id: UUID?
+    @Field(key: "name") var name: String
+}
+
+// Custom suffix for specific models
+@FluentContent(contentSuffix: "DTO")  // Generates UserDTO with toDTO() method
+final class User: Model {
+    @ID var id: UUID?
+    @Field(key: "name") var name: String
+}
+
+// Global configuration (optional)
+FluentContentDefaults.contentSuffix = "Response"  // Changes default to UserResponse, PostResponse, etc.
+```
+
 ### Relationship Control
 Choose which relationships to include in your content structures:
 ```swift
@@ -235,9 +256,11 @@ FluentContentDefaults.immutable = false        // Make all content types mutable
 FluentContentDefaults.includeRelations = .all  // Include all relationships by default
 FluentContentDefaults.accessLevel = .internal  // Use internal access by default
 FluentContentDefaults.conformances = [.equatable, .hashable]  // Default protocol conformances
+FluentContentDefaults.contentSuffix = "Content"  // Default suffix for generated types (can be changed)
 
 // Individual @FluentContent attributes still override the defaults
 @FluentContent(immutable: true)  // This specific type will be immutable
+@FluentContent(contentSuffix: "DTO")  // This specific type will use DTO suffix
 ```
 
 ## 📚 Advanced Usage

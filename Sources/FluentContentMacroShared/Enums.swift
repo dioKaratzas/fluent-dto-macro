@@ -1,6 +1,6 @@
 import Foundation
 
-/// Specifies which Fluent relationships should be included in the generated content.
+/// Specifies which Fluent relationships should be included in the generated type.
 public struct IncludeRelations: OptionSet, Sendable {
     public let rawValue: Int
 
@@ -21,7 +21,7 @@ public struct IncludeRelations: OptionSet, Sendable {
     public static let none: IncludeRelations = []
 }
 
-/// Defines the access level for the generated `Content` struct and `toContent()` method.
+/// Defines the access level for the generated type and conversion method.
 public enum AccessLevel: String, Sendable {
     /// Matches the access level of the model.
     case matchModel

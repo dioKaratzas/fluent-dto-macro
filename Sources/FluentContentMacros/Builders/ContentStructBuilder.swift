@@ -8,14 +8,15 @@ struct ContentStructBuilder {
         properties: [PropertyExtractor.PropertyInfo],
         access: String,
         isImmutable: Bool,
-        conformances: ContentConformances
+        conformances: ContentConformances,
+        contentSuffix: String
     ) -> String {
         let keyword = isImmutable ? "let" : "var"
 
         let propertyLines = properties.map { name, baseType, isOpt, isArr, isRelationship in
             let optionalMark = isOpt ? "?" : ""
             let type = if isRelationship {
-                isArr ? "[\(baseType)Content]" : "\(baseType)Content"
+                isArr ? "[\(baseType)\(contentSuffix)]" : "\(baseType)\(contentSuffix)"
             } else {
                 isArr ? "[\(baseType)]" : baseType
             }
@@ -51,21 +52,22 @@ struct ContentStructBuilder {
         }
     }
 
-    static func buildToContentMethod(
+    static func buildConversionMethod(
         properties: [PropertyExtractor.PropertyInfo],
         contentName: String,
+        methodName: String,
         access: String
     ) -> String {
         if properties.isEmpty {
-            return "\(access) func toContent() -> \(contentName) { .init() }"
+            return "\(access) func \(methodName)() -> \(contentName) { .init() }"
         }
 
         let initArgs = properties.map { name, _, isOpt, isArr, isRelationship in
             if isRelationship {
                 if isArr {
-                    isOpt ? "\(name): \(name)?.map { $0.toContent() }" : "\(name): \(name).map { $0.toContent() }"
+                    isOpt ? "\(name): \(name)?.map { $0.\(methodName)() }" : "\(name): \(name).map { $0.\(methodName)() }"
                 } else {
-                    isOpt ? "\(name): \(name)?.toContent()" : "\(name): \(name).toContent()"
+                    isOpt ? "\(name): \(name)?.\(methodName)()" : "\(name): \(name).\(methodName)()"
                 }
             } else {
                 "\(name): \(name)"
@@ -73,7 +75,7 @@ struct ContentStructBuilder {
         }.joined(separator: ",\n")
 
         return """
-        \(access) func toContent() -> \(contentName) {
+        \(access) func \(methodName)() -> \(contentName) {
             .init(
                 \(initArgs)
             )

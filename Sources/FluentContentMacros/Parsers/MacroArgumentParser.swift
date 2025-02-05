@@ -8,7 +8,7 @@ import FluentContentMacroShared
 /// information from model declarations in the macro system.
 struct MacroArgumentParser {
     /// Configuration options parsed from macro arguments
-    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel, conformances: ContentConformances)
+    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel, conformances: ContentConformances, contentSuffix: String)
 
     /// Information about the model declaration being processed
     typealias ModelInfo = (name: String, members: MemberBlockSyntax?, accessLevel: String)
@@ -23,9 +23,10 @@ struct MacroArgumentParser {
         var relationNames = wrappersForCase(FluentContentDefaults.includeRelations)
         var accessLevel = FluentContentDefaults.accessLevel
         var conformances = FluentContentDefaults.conformances
+        var contentSuffix = FluentContentDefaults.contentSuffix
 
         guard let args = attr.arguments?.as(LabeledExprListSyntax.self) else {
-            return (isImmutable, relationNames, accessLevel, conformances)
+            return (isImmutable, relationNames, accessLevel, conformances, contentSuffix)
         }
 
         for arg in args {
@@ -47,10 +48,13 @@ struct MacroArgumentParser {
                 }
             } else if label == "conformances" {
                 conformances = try parseConformances(expr)
+            } else if label == "contentSuffix",
+                      let stringLit = expr.as(StringLiteralExprSyntax.self) {
+                contentSuffix = stringLit.segments.first?.description ?? FluentContentDefaults.contentSuffix
             }
         }
 
-        return (isImmutable, relationNames, accessLevel, conformances)
+        return (isImmutable, relationNames, accessLevel, conformances, contentSuffix)
     }
 
     /// Extracts information about a model declaration.
