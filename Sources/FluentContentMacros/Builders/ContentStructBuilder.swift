@@ -7,7 +7,8 @@ struct ContentStructBuilder {
         name: String,
         properties: [PropertyExtractor.PropertyInfo],
         access: String,
-        isImmutable: Bool
+        isImmutable: Bool,
+        conformances: ContentConformances
     ) -> String {
         let keyword = isImmutable ? "let" : "var"
 
@@ -21,13 +22,29 @@ struct ContentStructBuilder {
             return "\(access) \(keyword) \(name): \(type)\(optionalMark)"
         }.joined(separator: "\n")
 
+        // Always start with CodableContent
+        var protocols = ["CodableContent"]
+
+        // Add selected conformances
+        if conformances.contains(.equatable) {
+            protocols.append("Equatable")
+        }
+        if conformances.contains(.hashable) {
+            protocols.append("Hashable")
+        }
+        if conformances.contains(.sendable) {
+            protocols.append("Sendable")
+        }
+
+        let protocolList = protocols.joined(separator: ", ")
+
         return if propertyLines.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             """
-            \(access) struct \(name): CodableContent, Equatable, Sendable {}
+            \(access) struct \(name): \(protocolList) {}
             """
         } else {
             """
-            \(access) struct \(name): CodableContent, Equatable, Sendable {
+            \(access) struct \(name): \(protocolList) {
             \(propertyLines)
             }
             """

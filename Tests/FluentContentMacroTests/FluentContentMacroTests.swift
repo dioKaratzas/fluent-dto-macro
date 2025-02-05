@@ -3,6 +3,7 @@
     import MacroTesting
     import FluentContentMacro
     import FluentContentMacros
+    import FluentContentMacroShared
 
     @Suite(
         .macros(
@@ -27,7 +28,7 @@
                     """
                     class EmptyModel {}
 
-                    public struct EmptyModelContent: CodableContent, Equatable, Sendable {
+                    public struct EmptyModelContent: CodableContent, Equatable, Hashable, Sendable {
                     }
 
                     extension EmptyModel {
@@ -56,7 +57,7 @@
                         var body: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let title: String
                         public let body: String
                     }
@@ -102,7 +103,7 @@
                         var data: Data
                     }
 
-                    public struct AllPrimitivesContent: CodableContent, Equatable, Sendable {
+                    public struct AllPrimitivesContent: CodableContent, Equatable, Hashable, Sendable {
                         public let string: String
                         public let int: Int
                         public let double: Double
@@ -148,7 +149,7 @@
                         var age: Int
                     }
 
-                    public struct MutableModelContent: CodableContent, Equatable, Sendable {
+                    public struct MutableModelContent: CodableContent, Equatable, Hashable, Sendable {
                         public var name: String
                         public var age: Int
                     }
@@ -184,7 +185,7 @@
                         var scores: [Int]?
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Sendable {
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
                         public let name: String?
                         public let tags: [String]
                         public let scores: [Int]?
@@ -224,7 +225,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let author: UserContent
                     }
 
@@ -256,7 +257,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let author: UserContent
                     }
 
@@ -288,7 +289,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let comments: [CommentContent]
                     }
 
@@ -322,7 +323,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let comments: [CommentContent]
                     }
 
@@ -356,7 +357,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let author: UserContent
                         public let comments: [CommentContent]
                     }
@@ -392,7 +393,7 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let author: UserContent
                         public let comments: [CommentContent]
                     }
@@ -426,7 +427,7 @@
                         @OptionalParent(key: "post_id") var post: Post?
                     }
 
-                    public struct CommentContent: CodableContent, Equatable, Sendable {
+                    public struct CommentContent: CodableContent, Equatable, Hashable, Sendable {
                         public let post: PostContent?
                     }
 
@@ -458,7 +459,7 @@
                         var roles: [Role]
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Sendable {
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
                         public let roles: [RoleContent]
                     }
 
@@ -498,7 +499,7 @@
                         var normalProperty: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let author: UserContent
                         public let title: String
                         public let createdAt: Date
@@ -538,7 +539,7 @@
                         var title: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Sendable {
+                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         public let title: String
                     }
 
@@ -568,7 +569,7 @@
                         var title: String
                     }
 
-                    internal struct PostContent: CodableContent, Equatable, Sendable {
+                    internal struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         internal let title: String
                     }
 
@@ -598,7 +599,7 @@
                         var title: String
                     }
 
-                    fileprivate struct PostContent: CodableContent, Equatable, Sendable {
+                    fileprivate struct PostContent: CodableContent, Equatable, Hashable, Sendable {
                         fileprivate let title: String
                     }
 
@@ -628,7 +629,7 @@
                         var id: UUID?
                     }
 
-                    public struct BaseModelContent: CodableContent, Equatable, Sendable {
+                    public struct BaseModelContent: CodableContent, Equatable, Hashable, Sendable {
                         public let id: UUID?
                     }
 
@@ -665,7 +666,7 @@
                         var password: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Sendable {
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
                         public let username: String
                     }
 
@@ -721,7 +722,7 @@
                         var posts: [Post]
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Sendable {
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
                         public let id: UUID?
                         public let username: String
                         public let posts: [PostContent]
@@ -761,7 +762,7 @@
                         @Children(for: \\.$parent) var children: [Child]
                     }
 
-                    public struct EmptyWithRelationsContent: CodableContent, Equatable, Sendable {
+                    public struct EmptyWithRelationsContent: CodableContent, Equatable, Hashable, Sendable {
                         public let children: [ChildContent]
                     }
 
@@ -797,7 +798,7 @@
                         var arrayOptDict: [[String: Int?]]
                     }
 
-                    public struct ComplexModelContent: CodableContent, Equatable, Sendable {
+                    public struct ComplexModelContent: CodableContent, Equatable, Hashable, Sendable {
                         public let simpleDict: [String: Int]
                         public let optArrayDict: [String: [Int]]?
                         public let arrayOptDict: [[String: Int?]]
@@ -835,7 +836,7 @@
                         var optionalArray: [String]?
                     }
 
-                    public struct NestedOptionalsContent: CodableContent, Equatable, Sendable {
+                    public struct NestedOptionalsContent: CodableContent, Equatable, Hashable, Sendable {
                         public let maybeArray: [String?]?
                         public let arrayOfOptionals: [String?]
                         public let optionalArray: [String]?
@@ -901,7 +902,7 @@
                         var compositeId: CompositeID
                     }
 
-                    public struct AllWrappersContent: CodableContent, Equatable, Sendable {
+                    public struct AllWrappersContent: CodableContent, Equatable, Hashable, Sendable {
                         public let id: UUID?
                         public let name: String
                         public let status: Status
@@ -919,6 +920,354 @@
                                 metadata: metadata,
                                 createdAt: createdAt,
                                 compositeId: compositeId
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+        }
+
+        // MARK: - Protocol Conformance Tests
+        @Suite("Protocol Conformances")
+        struct ProtocolConformanceTests {
+            @Test("Default conformances include all protocols")
+            func defaultConformancesIncludeAll() {
+                assertMacro {
+                    """
+                    @FluentContent
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify only Equatable conformance")
+            func onlyEquatableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: .equatable)
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify only Hashable conformance")
+            func onlyHashableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: .hashable)
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Hashable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify only Sendable conformance")
+            func onlySendableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: .sendable)
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify Equatable and Hashable conformance")
+            func equatableAndHashableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: [.equatable, .hashable])
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Hashable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify Equatable and Sendable conformance")
+            func equatableAndSendableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: [.equatable, .sendable])
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify Hashable and Sendable conformance")
+            func hashableAndSendableConformance() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: [.hashable, .sendable])
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Hashable, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify all conformances explicitly")
+            func allConformancesExplicitly() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: [.equatable, .hashable, .sendable])
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify all conformances using .all")
+            func allConformancesUsingAll() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: .all)
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Can specify no additional conformances")
+            func noAdditionalConformances() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: .none)
+                    class User {
+                        var name: String
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String
+                    }
+
+                    public struct UserContent: CodableContent {
+                        public let name: String
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Handles complex types with specific conformances")
+            func complexTypesWithSpecificConformances() {
+                assertMacro {
+                    """
+                    @FluentContent(conformances: [.equatable, .hashable])
+                    class User {
+                        var name: String?
+                        var age: Int
+                        var tags: [String]
+                        @Children(for: \\.$user) var posts: [Post]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String?
+                        var age: Int
+                        var tags: [String]
+                        @Children(for: \\.$user) var posts: [Post]
+                    }
+
+                    public struct UserContent: CodableContent, Equatable, Hashable {
+                        public let name: String?
+                        public let age: Int
+                        public let tags: [String]
+                        public let posts: [PostContent]
+                    }
+
+                    extension User {
+                        public func toContent() -> UserContent {
+                            .init(
+                                name: name,
+                                age: age,
+                                tags: tags,
+                                posts: posts.map {
+                                    $0.toContent()
+                                }
                             )
                         }
                     }

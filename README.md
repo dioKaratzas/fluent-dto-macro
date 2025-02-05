@@ -54,7 +54,7 @@ final class User: Model {
 }
 
 // The macro generates:
-public struct UserContent: CodableContent, Equatable, Sendable {
+public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
     public let id: UUID?
     public let name: String
     public let posts: [PostContent]
@@ -191,6 +191,39 @@ final class User: Model {
     @FluentContentIgnore  // Exclude from generated content structure
     @Field(key: "password_hash") var passwordHash: String
 }
+```
+
+### Protocol Conformances
+Control which protocols your content types conform to:
+```swift
+// All protocols (default)
+@FluentContent(conformances: .all)  // Equatable, Hashable, and Sendable
+
+// Single protocol
+@FluentContent(conformances: .equatable)  // Only Equatable
+@FluentContent(conformances: .hashable)   // Only Hashable
+@FluentContent(conformances: .sendable)   // Only Sendable
+
+// Multiple protocols
+@FluentContent(conformances: [.equatable, .hashable])     // Equatable and Hashable
+@FluentContent(conformances: [.equatable, .sendable])     // Equatable and Sendable
+@FluentContent(conformances: [.hashable, .sendable])      // Hashable and Sendable
+
+// No additional protocols
+@FluentContent(conformances: .none)  // Only CodableContent
+```
+
+### Global Defaults
+Configure default behavior for all @FluentContent usages in your app:
+```swift
+// In your app's setup code
+FluentContentDefaults.immutable = false        // Make all content types mutable by default
+FluentContentDefaults.includeRelations = .both // Include all relationships by default
+FluentContentDefaults.accessLevel = .internal  // Use internal access by default
+FluentContentDefaults.conformances = [.equatable, .hashable]  // Default protocol conformances
+
+// Individual @FluentContent attributes still override the defaults
+@FluentContent(immutable: true)  // This specific type will be immutable
 ```
 
 ## 📚 Advanced Usage

@@ -20,6 +20,10 @@ import FluentContentMacroShared
   The desired access level for the generated `Content` struct and `toContent()` method.
   Defaults to `.public`, but you can specify `.internal`, `.fileprivate`, or `.private` to restrict visibility.
 
+  - **conformances**:
+  The protocols that the generated content should conform to.
+  Defaults to all available protocols (Equatable, Hashable, Sendable).
+
   ### Usage Example
 
   ```swift
@@ -39,14 +43,17 @@ import FluentContentMacroShared
  extension User { public func toContent() -> UserContent { ... } }
   */
 @attached(peer, names: suffixed(Content))
-@attached(extension, names: named(toContent), conformances: Equatable)
+@attached(extension, names: named(toContent))
 public macro FluentContent(
     /// If `true`, the generated `Content` struct uses `let` instead of `var`.
-    immutable: Bool = DefaultConfig.immutable,
+    immutable: Bool = FluentContentDefaults.immutable,
     /// Specifies which Fluent relationships to include in the generated content.
-    includeRelations: IncludeRelations = DefaultConfig.includeRelations,
+    includeRelations: IncludeRelations = FluentContentDefaults.includeRelations,
     /// The desired access level for the generated `Content` struct and `toContent()` method.
-    accessLevel: AccessLevel = DefaultConfig.accessLevel
+    accessLevel: AccessLevel = FluentContentDefaults.accessLevel,
+    /// The protocols that the generated content should conform to.
+    /// Defaults to all available protocols (Equatable, Hashable, Sendable).
+    conformances: ContentConformances = FluentContentDefaults.conformances
 ) = #externalMacro(
     module: "FluentContentMacros",
     type: "FluentContentMacro"

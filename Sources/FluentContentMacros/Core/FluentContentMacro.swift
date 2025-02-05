@@ -72,7 +72,7 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
         // Parse the macro arguments => (immutable, includeRelations => [String])
-        let (isImmutable, includeRelations, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
+        let (isImmutable, includeRelations, accessLevel, conformances) = try MacroArgumentParser.parseMacroArguments(from: node)
 
         // Identify class or struct
         let (modelName, members, modelAccess) = MacroArgumentParser.extractModelDeclInfo(declaration: declaration)
@@ -89,7 +89,8 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
             name: contentName,
             properties: props,
             access: structAccess,
-            isImmutable: isImmutable
+            isImmutable: isImmutable,
+            conformances: conformances
         )
 
         return [DeclSyntax(stringLiteral: structDecl)]
@@ -111,7 +112,7 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         conformingTo protocols: [SwiftSyntax.TypeSyntax],
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        let (_, includeRelations, accessLevel) = try MacroArgumentParser.parseMacroArguments(from: node)
+        let (_, includeRelations, accessLevel, _) = try MacroArgumentParser.parseMacroArguments(from: node)
         let (modelName, members, modelAccess) = MacroArgumentParser.extractModelDeclInfo(declaration: declaration)
         guard !modelName.isEmpty else {
             return []

@@ -8,7 +8,7 @@ import FluentContentMacroShared
 /// information from model declarations in the macro system.
 struct MacroArgumentParser {
     /// Configuration options parsed from macro arguments
-    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel)
+    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel, conformances: ContentConformances)
 
     /// Information about the model declaration being processed
     typealias ModelInfo = (name: String, members: MemberBlockSyntax?, accessLevel: String)
@@ -19,12 +19,13 @@ struct MacroArgumentParser {
     static func parseMacroArguments(
         from attr: AttributeSyntax
     ) throws -> MacroConfig {
-        var isImmutable = DefaultConfig.immutable
-        var relationNames = wrappersForCase(DefaultConfig.includeRelations)
-        var accessLevel = DefaultConfig.accessLevel
+        var isImmutable = FluentContentDefaults.immutable
+        var relationNames = wrappersForCase(FluentContentDefaults.includeRelations)
+        var accessLevel = FluentContentDefaults.accessLevel
+        var conformances = FluentContentDefaults.conformances
 
         guard let args = attr.arguments?.as(LabeledExprListSyntax.self) else {
-            return (isImmutable, relationNames, accessLevel)
+            return (isImmutable, relationNames, accessLevel, conformances)
         }
 
         for arg in args {
@@ -44,10 +45,12 @@ struct MacroArgumentParser {
                         accessLevel = cAccess
                     }
                 }
+            } else if label == "conformances" {
+                conformances = try parseConformances(expr)
             }
         }
 
-        return (isImmutable, relationNames, accessLevel)
+        return (isImmutable, relationNames, accessLevel, conformances)
     }
 
     /// Extracts information about a model declaration.
@@ -120,5 +123,35 @@ struct MacroArgumentParser {
             return "private"
         }
         return "internal"
+    }
+
+    private static func parseConformances(_ expr: some ExprSyntaxProtocol) throws -> ContentConformances {
+        if let arrayExpr = expr.as(ArrayExprSyntax.self) {
+            var conformances: ContentConformances = []
+            for element in arrayExpr.elements {
+                if let memAccess = element.expression.as(MemberAccessExprSyntax.self) {
+                    switch memAccess.declName.baseName.text {
+                    case "equatable": conformances.insert(.equatable)
+                    case "hashable": conformances.insert(.hashable)
+                    case "sendable": conformances.insert(.sendable)
+                    case "all": conformances = .all
+                    case "none": conformances = .none
+                    default: break
+                    }
+                }
+            }
+            return conformances
+        } else if let memAccess = expr.as(MemberAccessExprSyntax.self) {
+            let baseName = memAccess.declName.baseName.text
+            switch baseName {
+            case "equatable": return [.equatable]
+            case "hashable": return [.hashable]
+            case "sendable": return [.sendable]
+            case "all": return .all
+            case "none": return .none
+            default: return .none
+            }
+        }
+        return .all // Default to all if parsing fails
     }
 }
