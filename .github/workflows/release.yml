@@ -106,16 +106,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update README.md version
-        run: |
-          # Update the package version in README.md
-          sed -i.bak 's/\.package(url: "https:\/\/github\.com\/diokaratzas\/fluent-content-macro\.git", from: "[^"]*")/\.package(url: "https:\/\/github\.com\/diokaratzas\/fluent-content-macro\.git", from: "${{ github.event.inputs.version }}")/' README.md
-          rm README.md.bak
-          
-          # Commit and push the changes
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git add README.md
-          git commit -m "docs: update version in README.md to ${{ github.event.inputs.version }} [skip ci]"
-          git push 
