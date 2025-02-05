@@ -57,7 +57,7 @@ struct MacroArgumentParser {
     /// - Parameter declaration: The declaration to analyze
     /// - Returns: A ModelInfo containing the model's name, members, and access level
     static func extractModelDeclInfo(
-        declaration: some SwiftSyntax.DeclSyntaxProtocol
+        declaration: some DeclSyntaxProtocol
     ) -> ModelInfo {
         if let classDecl = declaration.as(ClassDeclSyntax.self) {
             let access = findAccessLevel(in: classDecl.modifiers)
@@ -67,7 +67,23 @@ struct MacroArgumentParser {
             let access = findAccessLevel(in: structDecl.modifiers)
             return (structDecl.name.text, structDecl.memberBlock, access)
         }
+        return ("", nil, "")
+    }
 
+    /// Extracts information about a model declaration.
+    /// - Parameter declaration: The declaration to analyze
+    /// - Returns: A ModelInfo containing the model's name, members, and access level
+    static func extractModelDeclInfo(
+        declaration: some DeclGroupSyntax
+    ) -> ModelInfo {
+        if let classDecl = declaration.as(ClassDeclSyntax.self) {
+            let access = findAccessLevel(in: classDecl.modifiers)
+            return (classDecl.name.text, classDecl.memberBlock, access)
+        }
+        if let structDecl = declaration.as(StructDeclSyntax.self) {
+            let access = findAccessLevel(in: structDecl.modifiers)
+            return (structDecl.name.text, structDecl.memberBlock, access)
+        }
         return ("", nil, "")
     }
 
