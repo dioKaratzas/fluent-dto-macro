@@ -90,25 +90,32 @@ struct MacroArgumentParser {
     private static func parseIncludeRelations(
         _ expr: some ExprSyntaxProtocol
     ) throws -> [String] {
-        let relationText: String? = {
-            if let memAccess = expr.as(MemberAccessExprSyntax.self) {
-                return memAccess.declName.baseName.text
-            } else if let fnCall = expr.as(FunctionCallExprSyntax.self) {
-                return fnCall.calledExpression.description.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            return nil
-        }()
-
         let relation: IncludeRelations = {
-            guard let text = relationText else {
-                return .parent
+            if let memAccess = expr.as(MemberAccessExprSyntax.self) {
+                let baseName = memAccess.declName.baseName.text
+                switch baseName {
+                case "parent": return .parent
+                case "children": return .children
+                case "all": return .all
+                case "none": return .none
+                default: return .none
+                }
+            } else if let arrayExpr = expr.as(ArrayExprSyntax.self) {
+                var relations: IncludeRelations = []
+                for element in arrayExpr.elements {
+                    if let memAccess = element.expression.as(MemberAccessExprSyntax.self) {
+                        switch memAccess.declName.baseName.text {
+                        case "parent": relations.insert(.parent)
+                        case "children": relations.insert(.children)
+                        case "all": return .all
+                        case "none": return .none
+                        default: break
+                        }
+                    }
+                }
+                return relations
             }
-            switch text {
-            case let text where text.hasSuffix("parent"): return .parent
-            case let text where text.hasSuffix("children"): return .children
-            case let text where text.hasSuffix("both"): return .both
-            default: return .parent
-            }
+            return .none
         }()
 
         return wrappersForCase(relation)

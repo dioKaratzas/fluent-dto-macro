@@ -11,13 +11,16 @@ enum FluentRelationship: String, CaseIterable {
 
     /// Returns relationship wrappers based on the IncludeRelations case
     static func wrappers(for includeRelations: IncludeRelations) -> [String] {
-        switch includeRelations {
-        case .parent:
-            [FluentRelationship.parent.rawValue, FluentRelationship.optionalParent.rawValue]
-        case .children:
-            [FluentRelationship.children.rawValue, FluentRelationship.optionalChild.rawValue, FluentRelationship.siblings.rawValue]
-        case .both:
-            FluentRelationship.allCases.map(\.rawValue)
+        var wrappers: [String] = []
+
+        if includeRelations.contains(.parent) {
+            wrappers += [FluentRelationship.parent.rawValue, FluentRelationship.optionalParent.rawValue]
         }
+
+        if includeRelations.contains(.children) {
+            wrappers += [FluentRelationship.children.rawValue, FluentRelationship.optionalChild.rawValue, FluentRelationship.siblings.rawValue]
+        }
+
+        return wrappers
     }
 }
