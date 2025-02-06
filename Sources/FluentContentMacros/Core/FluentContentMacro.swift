@@ -75,7 +75,7 @@ public struct FluentContentMacro: MemberMacro {
         }
 
         let structAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
-        let contentName = "\(contentSuffix)"
+        let contentName = "\(modelName)\(contentSuffix)"
         let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
         
         // Build the nested content struct
@@ -96,9 +96,13 @@ public struct FluentContentMacro: MemberMacro {
             access: structAccess
         )
 
+        // Build the typealias
+        let typealiasDecl = "\(structAccess) typealias \(contentName) = Self.\(contentName)"
+
         return [
             DeclSyntax(stringLiteral: structDecl),
-            DeclSyntax(stringLiteral: methodDecl)
+            DeclSyntax(stringLiteral: methodDecl),
+            DeclSyntax(stringLiteral: typealiasDecl)
         ]
     }
 }

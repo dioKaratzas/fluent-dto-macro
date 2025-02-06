@@ -3,9 +3,10 @@ import FluentContentMacroShared
 /**
  A macro that generates a content representation of your Fluent model.
 
- This macro provides two main functionalities:
- 1. Generates a peer type with the name pattern `{ModelName}{Suffix}` (e.g., `UserContent` by default)
- 2. Adds a conversion method named `to{Suffix}()` (e.g., `toContent()` by default) via extension
+ This macro provides three main functionalities:
+ 1. Generates a nested type with the name pattern `{ModelName}{Suffix}` (e.g., `UserContent` by default)
+ 2. Adds a conversion method named `to{Suffix}()` (e.g., `toContent()` by default)
+ 3. Creates a typealias for easier access to the nested type (e.g., `typealias UserContent = Self.UserContent`)
 
  ## Features
  - Automatically includes normal fields (e.g. `@Field`, `@ID`)
@@ -18,17 +19,17 @@ import FluentContentMacroShared
  ## Parameters
 
  - **immutable**:
- If `true`, the generated struct uses `let` for its stored properties.
+ If `true`, the generated type uses `let` for its stored properties.
  If `false`, it uses `var`. Defaults to `true`.
 
  - **includeRelations**:
- Specifies which Fluent property wrappers should be transformed into nested content.
- Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested types.
+ Specifies which Fluent property wrappers should be transformed into nested types.
+ Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested types with the same suffix.
  Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentContentIgnore`.
  Defaults to `.children`.
 
  - **accessLevel**:
- The desired access level for the generated struct and conversion method.
+ The desired access level for the generated type and conversion method.
  Defaults to `.public`, but you can specify `.internal`, `.fileprivate`, or `.private` to restrict visibility.
 
  - **conformances**:
@@ -36,10 +37,11 @@ import FluentContentMacroShared
  Defaults to all available protocols (Equatable, Hashable, Sendable).
 
  - **contentSuffix**:
- The suffix to use for the generated type and conversion method.
+ The suffix to use for generated types and conversion methods.
  For example, if set to "DTO", a User model would generate:
- - A UserDTO struct
+ - A nested UserDTO struct
  - A toDTO() conversion method
+ - A typealias UserDTO = Self.UserDTO
  Defaults to FluentContentDefaults.contentSuffix.
 
  ## Example Usage
@@ -54,7 +56,8 @@ import FluentContentMacroShared
 
  // Generates:
  public struct UserContent: CodableContent, Equatable, Hashable, Sendable { ... }
- extension User { public func toContent() -> UserContent { ... } }
+ public func toContent() -> UserContent { ... }
+ public typealias UserContent = Self.UserContent
 
  // Custom suffix example
  @FluentContent(contentSuffix: "DTO")
@@ -65,16 +68,17 @@ import FluentContentMacroShared
 
  // Generates:
  public struct UserDTO: CodableContent, Equatable, Hashable, Sendable { ... }
- extension User { public func toDTO() -> UserDTO { ... } }
+ public func toDTO() -> UserDTO { ... }
+ public typealias UserDTO = Self.UserDTO
  ```
  */
 @attached(member, names: arbitrary)
 public macro FluentContent(
-    /// If `true`, the generated struct uses `let` instead of `var`.
+    /// If `true`, the generated type uses `let` instead of `var`.
     immutable: Bool = FluentContentDefaults.immutable,
     /// Specifies which Fluent relationships to include in the generated content.
     includeRelations: IncludeRelations = FluentContentDefaults.includeRelations,
-    /// The desired access level for the generated struct and conversion method.
+    /// The desired access level for the generated type and conversion method.
     accessLevel: AccessLevel = FluentContentDefaults.accessLevel,
     /// The protocols that the generated type should conform to.
     /// Defaults to all available protocols (Equatable, Hashable, Sendable).
