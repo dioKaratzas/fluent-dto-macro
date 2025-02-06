@@ -3,7 +3,7 @@ import SwiftSyntaxMacros
 import SwiftSyntaxBuilder
 import SwiftCompilerPlugin
 
-public struct FluentContentIgnoreMacro: AccessorMacro {
+public struct FluentDTOIgnoreMacro: AccessorMacro {
     public static func expansion(
         of node: SwiftSyntax.AttributeSyntax,
         providingAccessorsOf declaration: some DeclSyntaxProtocol,

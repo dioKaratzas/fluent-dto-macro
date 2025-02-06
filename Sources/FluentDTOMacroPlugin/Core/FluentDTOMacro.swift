@@ -4,32 +4,32 @@ import SwiftSyntaxBuilder
 import SwiftCompilerPlugin
 
 /**
- A macro that generates a content representation of your Fluent model.
+ A macro that generates a DTO representation of your Fluent model.
 
  This macro provides two main functionalities:
- 1. Generates a `...Content` struct as a "peer" declaration that can be used for API responses
- 2. Adds a `toContent()` method via extension to easily convert model instances to their content representation
+ 1. Generates a `...DTO` struct as a "peer" declaration that can be used for API responses
+ 2. Adds a `toDTO()` method via extension to easily convert model instances to their DTO representation
 
  ## Features
  - Automatically includes normal fields (e.g. `@Field`, `@ID`)
  - Optionally includes relationship wrappers (e.g. `@Parent`, `@Children`) based on `includeRelations`
- - Supports marking fields to ignore with `@FluentContentIgnore`
+ - Supports marking fields to ignore with `@FluentDTOIgnore`
  - Configurable mutability with `immutable` parameter
  - Customizable access level
 
  ## Parameters
- - **immutable**: If `true`, the generated `Content` struct uses `let` for its stored properties.
+ - **immutable**: If `true`, the generated `DTO` struct uses `let` for its stored properties.
    If `false`, it uses `var`. Defaults to `true`.
- - **includeRelations**: Specifies which Fluent property wrappers should be transformed into nested content.
-   Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...Content` types.
-   Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentContentIgnore`.
+ - **includeRelations**: Specifies which Fluent property wrappers should be transformed into nested DTOs.
+   Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...DTO` types.
+   Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentDTOIgnore`.
    Defaults to `.children`.
- - **accessLevel**: The desired access level for the generated `Content` struct and `toContent()` method.
+ - **accessLevel**: The desired access level for the generated `DTO` struct and `toDTO()` method.
    Defaults to `.public`, but you can specify `.internal`, `.fileprivate`, or `.private` to restrict visibility.
 
  ## Example Usage
  ```swift
- @FluentContent(
+ @FluentDTO(
     immutable: true,
     includeRelations: .children,
     accessLevel: .public
@@ -41,26 +41,26 @@ import SwiftCompilerPlugin
  }
 
  // The macro auto-generates:
- public struct UserContent: Content, Equatable {
+ public struct UserDTO: DTO, Equatable {
      public let id: UUID?
      public let username: String
-     public let posts: [PostContent]
+     public let posts: [PostDTO]
  }
 
  extension User {
-     public func toContent() -> UserContent {
+     public func toDTO() -> UserDTO {
          .init(
              id: id,
              username: username,
-             posts: posts.map { $0.toContent() }
+             posts: posts.map { $0.toDTO() }
          )
      }
  }
  ```
  */
-public struct FluentContentMacro: PeerMacro, ExtensionMacro {
-    // MARK: - Peer Macro: Generate "...Content" struct
-    /// Expands the macro to generate a peer content struct that mirrors the model's structure.
+public struct FluentDTOMacro: PeerMacro, ExtensionMacro {
+    // MARK: - Peer Macro: Generate "...DTO" struct
+    /// Expands the macro to generate a peer DTO struct that mirrors the model's structure.
     /// - Parameters:
     ///   - node: The attribute syntax node representing the macro
     ///   - declaration: The declaration the macro is attached to
@@ -82,11 +82,11 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
 
         let structAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
 
-        // Build the "Content" struct
-        let contentName = "\(modelName)Content"
+        // Build the "DTO" struct
+        let dtoName = "\(modelName)DTO"
         let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
-        let structDecl = ContentStructBuilder.buildContentStruct(
-            name: contentName,
+        let structDecl = DTOStructBuilder.buildDTOStruct(
+            name: dtoName,
             properties: props,
             access: structAccess,
             isImmutable: isImmutable,
@@ -96,8 +96,8 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         return [DeclSyntax(stringLiteral: structDecl)]
     }
 
-    // MARK: - Extension Macro: Generate `toContent()` Method
-    /// Expands the macro to add a `toContent()` method to the model.
+    // MARK: - Extension Macro: Generate `toDTO()` Method
+    /// Expands the macro to add a `toDTO()` method to the model.
     /// - Parameters:
     ///   - node: The attribute syntax node representing the macro
     ///   - declaration: The declaration group the macro is attached to
@@ -120,11 +120,11 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
 
         let methodAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
         let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
-        let contentName = "\(modelName)Content"
+        let dtoName = "\(modelName)DTO"
 
-        let methodDecl = ContentStructBuilder.buildToContentMethod(
+        let methodDecl = DTOStructBuilder.buildToDTOMethod(
             properties: props,
-            contentName: contentName,
+            dtoName: dtoName,
             access: methodAccess
         )
 

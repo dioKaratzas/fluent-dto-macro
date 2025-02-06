@@ -1,38 +1,38 @@
 #if canImport(Testing)
     import Testing
     import MacroTesting
-    import FluentContentMacro
-    import FluentContentMacros
-    import FluentContentMacroShared
+    import FluentDTOMacro
+    import FluentDTOMacroPlugin
+    import FluentDTOMacroShared
 
     @Suite(
         .macros(
             macros: [
-                "FluentContent": FluentContentMacro.self,
-                "FluentContentIgnore": FluentContentIgnoreMacro.self
+                "FluentDTO": FluentDTOMacro.self,
+                "FluentDTOIgnore": FluentDTOIgnoreMacro.self
             ]
         )
     )
-    struct FluentContentMacroTests {
+    struct FluentDTOMacroTests {
         // MARK: - 1️⃣ Basic Functionality Tests
         @Suite("Basic Functionality")
         struct BasicFunctionalityTests {
-            @Test("Generates empty content struct for empty model")
+            @Test("Generates empty DTO struct for empty model")
             func generatesEmptyStruct() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class EmptyModel {}
                     """
                 } expansion: {
                     """
                     class EmptyModel {}
 
-                    public struct EmptyModelContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct EmptyModelDTO: CodableDTO, Equatable, Hashable, Sendable {
                     }
 
                     extension EmptyModel {
-                        public func toContent() -> EmptyModelContent {
+                        public func toDTO() -> EmptyModelDTO {
                             .init()
                         }
                     }
@@ -44,7 +44,7 @@
             func generatesStructWithBasicFields() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class Post {
                         var title: String
                         var body: String
@@ -57,13 +57,13 @@
                         var body: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let title: String
                         public let body: String
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
                                 title: title,
                                 body: body
@@ -78,7 +78,7 @@
             func handlesPrimitiveTypes() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class AllPrimitives {
                         var string: String
                         var int: Int
@@ -103,7 +103,7 @@
                         var data: Data
                     }
 
-                    public struct AllPrimitivesContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct AllPrimitivesDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let string: String
                         public let int: Int
                         public let double: Double
@@ -115,7 +115,7 @@
                     }
 
                     extension AllPrimitives {
-                        public func toContent() -> AllPrimitivesContent {
+                        public func toDTO() -> AllPrimitivesDTO {
                             .init(
                                 string: string,
                                 int: int,
@@ -136,7 +136,7 @@
             func handlesMutableProperties() {
                 assertMacro {
                     """
-                    @FluentContent(immutable: false)
+                    @FluentDTO(immutable: false)
                     class MutableModel {
                         var name: String
                         var age: Int
@@ -149,13 +149,13 @@
                         var age: Int
                     }
 
-                    public struct MutableModelContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct MutableModelDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public var name: String
                         public var age: Int
                     }
 
                     extension MutableModel {
-                        public func toContent() -> MutableModelContent {
+                        public func toDTO() -> MutableModelDTO {
                             .init(
                                 name: name,
                                 age: age
@@ -170,7 +170,7 @@
             func handlesOptionalAndArrayTypes() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class User {
                         var name: String?
                         var tags: [String]
@@ -185,14 +185,14 @@
                         var scores: [Int]?
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let name: String?
                         public let tags: [String]
                         public let scores: [Int]?
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name,
                                 tags: tags,
@@ -212,7 +212,7 @@
             func includesOnlyParentRelationshipsWithDot() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .parent)
+                    @FluentDTO(includeRelations: .parent)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -225,14 +225,14 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let author: UserContent
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let author: UserDTO
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toContent()
+                                author: author.toDTO()
                             )
                         }
                     }
@@ -244,7 +244,7 @@
             func includesOnlyParentRelationshipsWithFullType() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: IncludeRelations.parent)
+                    @FluentDTO(includeRelations: IncludeRelations.parent)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -257,14 +257,14 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let author: UserContent
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let author: UserDTO
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toContent()
+                                author: author.toDTO()
                             )
                         }
                     }
@@ -276,7 +276,7 @@
             func includesOnlyChildrenRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .children)
+                    @FluentDTO(includeRelations: .children)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -289,15 +289,15 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let comments: [CommentContent]
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let comments: [CommentDTO]
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
                                 comments: comments.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -310,7 +310,7 @@
             func includesBothRelationshipsWithArray() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: [.parent, .children])
+                    @FluentDTO(includeRelations: [.parent, .children])
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -323,17 +323,17 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let author: UserContent
-                        public let comments: [CommentContent]
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let author: UserDTO
+                        public let comments: [CommentDTO]
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toContent(),
+                                author: author.toDTO(),
                                 comments: comments.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -346,7 +346,7 @@
             func includesBothRelationshipsWithAll() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .all)
+                    @FluentDTO(includeRelations: .all)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -359,17 +359,17 @@
                         @Children(for: \\.$post) var comments: [Comment]
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let author: UserContent
-                        public let comments: [CommentContent]
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let author: UserDTO
+                        public let comments: [CommentDTO]
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toContent(),
+                                author: author.toDTO(),
                                 comments: comments.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -382,7 +382,7 @@
             func includesNoRelationshipsWithNone() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .none)
+                    @FluentDTO(includeRelations: .none)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -397,12 +397,12 @@
                         var title: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let title: String
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
                                 title: title
                             )
@@ -416,7 +416,7 @@
             func handlesOptionalRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .parent)
+                    @FluentDTO(includeRelations: .parent)
                     class Comment {
                         @OptionalParent(key: "post_id") var post: Post?
                     }
@@ -427,14 +427,14 @@
                         @OptionalParent(key: "post_id") var post: Post?
                     }
 
-                    public struct CommentContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let post: PostContent?
+                    public struct CommentDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let post: PostDTO?
                     }
 
                     extension Comment {
-                        public func toContent() -> CommentContent {
+                        public func toDTO() -> CommentDTO {
                             .init(
-                                post: post?.toContent()
+                                post: post?.toDTO()
                             )
                         }
                     }
@@ -446,7 +446,7 @@
             func handlesSiblingsRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .children)
+                    @FluentDTO(includeRelations: .children)
                     class User {
                         @Siblings(through: UserRole.self, from: \\.$user, to: \\.$role)
                         var roles: [Role]
@@ -459,15 +459,15 @@
                         var roles: [Role]
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let roles: [RoleContent]
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let roles: [RoleDTO]
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 roles: roles.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -480,7 +480,7 @@
             func includesNonRelationshipProperties() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .parent)
+                    @FluentDTO(includeRelations: .parent)
                     class Post {
                         @Parent(key: "author_id") var author: User
                         @Children(for: \\.$post) var comments: [Comment]
@@ -499,17 +499,17 @@
                         var normalProperty: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let author: UserContent
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let author: UserDTO
                         public let title: String
                         public let createdAt: Date
                         public let normalProperty: String
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toContent(),
+                                author: author.toDTO(),
                                 title: title,
                                 createdAt: createdAt,
                                 normalProperty: normalProperty
@@ -528,7 +528,7 @@
             func matchesModelAccessLevel() {
                 assertMacro {
                     """
-                    @FluentContent(accessLevel: .matchModel)
+                    @FluentDTO(accessLevel: .matchModel)
                     public class Post {
                         var title: String
                     }
@@ -539,12 +539,12 @@
                         var title: String
                     }
 
-                    public struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let title: String
                     }
 
                     extension Post {
-                        public func toContent() -> PostContent {
+                        public func toDTO() -> PostDTO {
                             .init(
                                 title: title
                             )
@@ -558,7 +558,7 @@
             func usesCustomAccessLevel() {
                 assertMacro {
                     """
-                    @FluentContent(accessLevel: .internal)
+                    @FluentDTO(accessLevel: .internal)
                     public class Post {
                         var title: String
                     }
@@ -569,12 +569,12 @@
                         var title: String
                     }
 
-                    internal struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                    internal struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
                         internal let title: String
                     }
 
                     extension Post {
-                        internal func toContent() -> PostContent {
+                        internal func toDTO() -> PostDTO {
                             .init(
                                 title: title
                             )
@@ -588,7 +588,7 @@
             func handlesFileprivateAccess() {
                 assertMacro {
                     """
-                    @FluentContent(accessLevel: .fileprivate)
+                    @FluentDTO(accessLevel: .fileprivate)
                     class Post {
                         var title: String
                     }
@@ -599,12 +599,12 @@
                         var title: String
                     }
 
-                    fileprivate struct PostContent: CodableContent, Equatable, Hashable, Sendable {
+                    fileprivate struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
                         fileprivate let title: String
                     }
 
                     extension Post {
-                        fileprivate func toContent() -> PostContent {
+                        fileprivate func toDTO() -> PostDTO {
                             .init(
                                 title: title
                             )
@@ -618,7 +618,7 @@
             func handlesOpenClass() {
                 assertMacro {
                     """
-                    @FluentContent(accessLevel: .matchModel)
+                    @FluentDTO(accessLevel: .matchModel)
                     open class BaseModel {
                         var id: UUID?
                     }
@@ -629,12 +629,12 @@
                         var id: UUID?
                     }
 
-                    public struct BaseModelContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct BaseModelDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let id: UUID?
                     }
 
                     extension BaseModel {
-                        public func toContent() -> BaseModelContent {
+                        public func toDTO() -> BaseModelDTO {
                             .init(
                                 id: id
                             )
@@ -648,14 +648,14 @@
         // MARK: - 4️⃣ Ignore Attribute Tests
         @Suite("Ignore Attribute")
         struct IgnoreAttributeTests {
-            @Test("Ignores fields marked with @FluentContentIgnore")
+            @Test("Ignores fields marked with @FluentDTOIgnore")
             func ignoresMarkedFields() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class User {
                         var username: String
-                        @FluentContentIgnore
+                        @FluentDTOIgnore
                         var password: String
                     }
                     """
@@ -666,12 +666,12 @@
                         var password: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let username: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 username: username
                             )
@@ -685,7 +685,7 @@
             func ignoresMultipleFieldsWithMixedAttributes() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class User {
                         @ID(key: .id)
                         var id: UUID?
@@ -693,11 +693,11 @@
                         @Field(key: "username")
                         var username: String
 
-                        @FluentContentIgnore
+                        @FluentDTOIgnore
                         @Field(key: "password_hash")
                         var passwordHash: String
 
-                        @FluentContentIgnore
+                        @FluentDTOIgnore
                         @Field(key: "secret_key")
                         var secretKey: String
 
@@ -722,19 +722,19 @@
                         var posts: [Post]
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let id: UUID?
                         public let username: String
-                        public let posts: [PostContent]
+                        public let posts: [PostDTO]
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 id: id,
                                 username: username,
                                 posts: posts.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -751,7 +751,7 @@
             func handlesEmptyStructWithRelationships() {
                 assertMacro {
                     """
-                    @FluentContent(includeRelations: .children)
+                    @FluentDTO(includeRelations: .children)
                     class EmptyWithRelations {
                         @Children(for: \\.$parent) var children: [Child]
                     }
@@ -762,15 +762,15 @@
                         @Children(for: \\.$parent) var children: [Child]
                     }
 
-                    public struct EmptyWithRelationsContent: CodableContent, Equatable, Hashable, Sendable {
-                        public let children: [ChildContent]
+                    public struct EmptyWithRelationsDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let children: [ChildDTO]
                     }
 
                     extension EmptyWithRelations {
-                        public func toContent() -> EmptyWithRelationsContent {
+                        public func toDTO() -> EmptyWithRelationsDTO {
                             .init(
                                 children: children.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }
@@ -783,7 +783,7 @@
             func handlesComplexNestedTypes() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class ComplexModel {
                         var simpleDict: [String: Int]
                         var optArrayDict: [String: [Int]]?
@@ -798,14 +798,14 @@
                         var arrayOptDict: [[String: Int?]]
                     }
 
-                    public struct ComplexModelContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct ComplexModelDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let simpleDict: [String: Int]
                         public let optArrayDict: [String: [Int]]?
                         public let arrayOptDict: [[String: Int?]]
                     }
 
                     extension ComplexModel {
-                        public func toContent() -> ComplexModelContent {
+                        public func toDTO() -> ComplexModelDTO {
                             .init(
                                 simpleDict: simpleDict,
                                 optArrayDict: optArrayDict,
@@ -821,7 +821,7 @@
             func handlesNestedOptionals() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class NestedOptionals {
                         var maybeArray: [String?]?
                         var arrayOfOptionals: [String?]
@@ -836,14 +836,14 @@
                         var optionalArray: [String]?
                     }
 
-                    public struct NestedOptionalsContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct NestedOptionalsDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let maybeArray: [String?]?
                         public let arrayOfOptionals: [String?]
                         public let optionalArray: [String]?
                     }
 
                     extension NestedOptionals {
-                        public func toContent() -> NestedOptionalsContent {
+                        public func toDTO() -> NestedOptionalsDTO {
                             .init(
                                 maybeArray: maybeArray,
                                 arrayOfOptionals: arrayOfOptionals,
@@ -859,7 +859,7 @@
             func handlesAllFluentFieldWrappers() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     final class AllWrappers: Model {
                         @ID(key: .id)
                         var id: UUID?
@@ -902,7 +902,7 @@
                         var compositeId: CompositeID
                     }
 
-                    public struct AllWrappersContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct AllWrappersDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let id: UUID?
                         public let name: String
                         public let status: Status
@@ -912,7 +912,7 @@
                     }
 
                     extension AllWrappers {
-                        public func toContent() -> AllWrappersContent {
+                        public func toDTO() -> AllWrappersDTO {
                             .init(
                                 id: id,
                                 name: name,
@@ -935,7 +935,7 @@
             func defaultConformancesIncludeAll() {
                 assertMacro {
                     """
-                    @FluentContent
+                    @FluentDTO
                     class User {
                         var name: String
                     }
@@ -946,12 +946,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -965,7 +965,7 @@
             func onlyEquatableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: .equatable)
+                    @FluentDTO(conformances: .equatable)
                     class User {
                         var name: String
                     }
@@ -976,12 +976,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable {
+                    public struct UserDTO: CodableDTO, Equatable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -995,7 +995,7 @@
             func onlyHashableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: .hashable)
+                    @FluentDTO(conformances: .hashable)
                     class User {
                         var name: String
                     }
@@ -1006,12 +1006,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Hashable {
+                    public struct UserDTO: CodableDTO, Hashable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1025,7 +1025,7 @@
             func onlySendableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: .sendable)
+                    @FluentDTO(conformances: .sendable)
                     class User {
                         var name: String
                     }
@@ -1036,12 +1036,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Sendable {
+                    public struct UserDTO: CodableDTO, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1055,7 +1055,7 @@
             func equatableAndHashableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: [.equatable, .hashable])
+                    @FluentDTO(conformances: [.equatable, .hashable])
                     class User {
                         var name: String
                     }
@@ -1066,12 +1066,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1085,7 +1085,7 @@
             func equatableAndSendableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: [.equatable, .sendable])
+                    @FluentDTO(conformances: [.equatable, .sendable])
                     class User {
                         var name: String
                     }
@@ -1096,12 +1096,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1115,7 +1115,7 @@
             func hashableAndSendableConformance() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: [.hashable, .sendable])
+                    @FluentDTO(conformances: [.hashable, .sendable])
                     class User {
                         var name: String
                     }
@@ -1126,12 +1126,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Hashable, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1145,7 +1145,7 @@
             func allConformancesExplicitly() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: [.equatable, .hashable, .sendable])
+                    @FluentDTO(conformances: [.equatable, .hashable, .sendable])
                     class User {
                         var name: String
                     }
@@ -1156,12 +1156,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1175,7 +1175,7 @@
             func allConformancesUsingAll() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: .all)
+                    @FluentDTO(conformances: .all)
                     class User {
                         var name: String
                     }
@@ -1186,12 +1186,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1205,7 +1205,7 @@
             func noAdditionalConformances() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: .none)
+                    @FluentDTO(conformances: .none)
                     class User {
                         var name: String
                     }
@@ -1216,12 +1216,12 @@
                         var name: String
                     }
 
-                    public struct UserContent: CodableContent {
+                    public struct UserDTO: CodableDTO {
                         public let name: String
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name
                             )
@@ -1235,7 +1235,7 @@
             func complexTypesWithSpecificConformances() {
                 assertMacro {
                     """
-                    @FluentContent(conformances: [.equatable, .hashable])
+                    @FluentDTO(conformances: [.equatable, .hashable])
                     class User {
                         var name: String?
                         var age: Int
@@ -1252,21 +1252,21 @@
                         @Children(for: \\.$user) var posts: [Post]
                     }
 
-                    public struct UserContent: CodableContent, Equatable, Hashable {
+                    public struct UserDTO: CodableDTO, Equatable, Hashable {
                         public let name: String?
                         public let age: Int
                         public let tags: [String]
-                        public let posts: [PostContent]
+                        public let posts: [PostDTO]
                     }
 
                     extension User {
-                        public func toContent() -> UserContent {
+                        public func toDTO() -> UserDTO {
                             .init(
                                 name: name,
                                 age: age,
                                 tags: tags,
                                 posts: posts.map {
-                                    $0.toContent()
+                                    $0.toDTO()
                                 }
                             )
                         }

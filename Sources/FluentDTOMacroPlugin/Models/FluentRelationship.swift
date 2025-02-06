@@ -1,5 +1,5 @@
 import Foundation
-import FluentContentMacroShared
+import FluentDTOMacroShared
 
 /// Represents all possible Fluent relationship property wrappers
 enum FluentRelationship: String, CaseIterable {

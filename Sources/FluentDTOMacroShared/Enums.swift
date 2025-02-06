@@ -1,6 +1,6 @@
 import Foundation
 
-/// Specifies which Fluent relationships should be included in the generated content.
+/// Specifies which Fluent relationships should be included in the generated DTO.
 public struct IncludeRelations: OptionSet, Sendable {
     public let rawValue: Int
 
@@ -21,7 +21,7 @@ public struct IncludeRelations: OptionSet, Sendable {
     public static let none: IncludeRelations = []
 }
 
-/// Defines the access level for the generated `Content` struct and `toContent()` method.
+/// Defines the access level for the generated `DTO` struct and `toDTO()` method.
 public enum AccessLevel: String, Sendable {
     /// Matches the access level of the model.
     case matchModel
@@ -39,8 +39,8 @@ public enum AccessLevel: String, Sendable {
     case `private`
 }
 
-/// Defines which protocols the generated content should conform to
-public struct ContentConformances: OptionSet, Sendable {
+/// Defines which protocols the generated DTO should conform to
+public struct DTOConformances: OptionSet, Sendable {
     public let rawValue: Int
 
     public init(rawValue: Int) {
@@ -48,17 +48,17 @@ public struct ContentConformances: OptionSet, Sendable {
     }
 
     /// Conform to Equatable protocol
-    public static let equatable = ContentConformances(rawValue: 1 << 0)
+    public static let equatable = DTOConformances(rawValue: 1 << 0)
 
     /// Conform to Hashable protocol
-    public static let hashable = ContentConformances(rawValue: 1 << 1)
+    public static let hashable = DTOConformances(rawValue: 1 << 1)
 
     /// Conform to Sendable protocol
-    public static let sendable = ContentConformances(rawValue: 1 << 2)
+    public static let sendable = DTOConformances(rawValue: 1 << 2)
 
     /// Conform to all available protocols (Equatable, Hashable, Sendable)
-    public static let all: ContentConformances = [.equatable, .hashable, .sendable]
+    public static let all: DTOConformances = [.equatable, .hashable, .sendable]
 
-    /// Only conform to CodableContent (minimum requirement)
-    public static let none: ContentConformances = []
+    /// Only conform to CodableDTO (minimum requirement)
+    public static let none: DTOConformances = []
 }

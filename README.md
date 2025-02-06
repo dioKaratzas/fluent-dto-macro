@@ -1,37 +1,46 @@
-# FluentContent
+# FluentDTO
+
+> **Note**: The package was renamed from FluentContentMacro to FluentDTOMacro shortly after initial release to better reflect its purpose. If you were one of the early adopters, please update your package references and macro usage accordingly.
 
 [![Swift](https://img.shields.io/badge/Swift-5.9%20%7C%205.10%20%7C%206-orange.svg)](https://swift.org)
 [![Vapor](https://img.shields.io/badge/Vapor-4.0-blue.svg)](https://vapor.codes)
-[![Tests](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml/badge.svg)](https://github.com/dioKaratzas/fluent-content-macro/actions/workflows/test.yml)
-[![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-content-macro)](https://github.com/dioKaratzas/fluent-content-macro/releases/latest)
+[![Tests](https://github.com/dioKaratzas/fluent-dto-macro/actions/workflows/test.yml/badge.svg)](https://github.com/dioKaratzas/fluent-dto-macro/actions/workflows/test.yml)
+[![Latest Release](https://img.shields.io/github/v/release/dioKaratzas/fluent-dto-macro)](https://github.com/dioKaratzas/fluent-dto-macro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A Swift macro that simplifies how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe content structures, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
+## 📖 Overview
 
-## ✨ Highlights
+A Swift macro that simplifies how you handle Vapor Fluent models in your API responses. It automatically generates clean, type-safe DTOs, eliminating boilerplate while maintaining a clear separation between your database models and API layer.
 
-- 🚀 **Reduced Boilerplate** - Automatic content structure generation with a simple macro
-- 🔄 **Basic Relationships** - Support for common Fluent relationship types
-- 🛡️ **Type Safety** - Compile-time checking and immutable structures by default
-- 🎯 **Flexible Control** - Fine-grained control over included relationships
+## ✨ Features
+
+- 🚀 **Reduced Boilerplate** - Automatic DTO generation with a simple macro
+- 🔒 **Type Safety** - Compile-time validation of your model-to-DTO mappings
+- 🎯 **Selective Fields** - Control which properties are exposed in your DTOs
+- 🔄 **Relationship Support** - Automatically handles nested Fluent relationships
+- 🧵 **Concurrency Ready** - Generated DTOs automatically conform to Sendable
+- 🛠️ **Customizable** - Configure access levels, mutability, and protocol conformance
 - 🔒 **Security First** - Easy exclusion of sensitive fields
 - 🎨 **Clean Architecture** - Clear separation of database and API concerns
-- 🧵 **Concurrency Ready** - Generated content structures automatically conform to Sendable
 
 ## 📦 Installation
 
-Add to your `Package.swift`:
+Add the following dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/diokaratzas/fluent-content-macro.git", from: "1.0.0")
+    .package(url: "https://github.com/diokaratzas/fluent-dto-macro.git", from: "1.0.0")
 ]
+```
 
+Then add the macro to your target's dependencies:
+
+```swift
 targets: [
     .target(
         name: "YourTarget",
         dependencies: [
-            .product(name: "FluentContentMacro", package: "fluent-content-macro")
+            .product(name: "FluentDTOMacro", package: "fluent-dto-macro")
         ]
     )
 ]
@@ -41,12 +50,12 @@ targets: [
 
 1️⃣ Import the package:
 ```swift
-import FluentContentMacro
+import FluentDTOMacro
 ```
 
 2️⃣ Add the macro to your model:
 ```swift
-@FluentContent
+@FluentDTO
 final class User: Model {
     @ID var id: UUID?
     @Field(key: "name") var name: String
@@ -54,66 +63,66 @@ final class User: Model {
 }
 
 // The macro generates:
-public struct UserContent: CodableContent, Equatable, Hashable, Sendable {
+public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
     public let id: UUID?
     public let name: String
-    public let posts: [PostContent]
+    public let posts: [PostDTO]
 }
 
 extension User {
-    public func toContent() -> UserContent {
+    public func toDTO() -> UserDTO {
         .init(
             id: id,
             name: name,
-            posts: posts.map { $0.toContent() }
+            posts: posts.map { $0.toDTO() }
         )
     }
 }
 ```
 
-3️⃣ Use the generated content:
+3️⃣ Use the generated DTO:
 ```swift
-func getUser(_ req: Request) async throws -> UserContent {
+func getUser(_ req: Request) async throws -> UserDTO {
     let user = try await User.find(req.parameters.get("id"), on: req.db)
-    return user.toContent()  // Type-safe UserContent struct
+    return user.toDTO()  // Type-safe UserDTO struct
 }
 ```
 
 ## ⚙️ Configuration
 
 ### Relationship Control
-Choose which relationships to include in your content structures:
+Choose which relationships to include in your DTOs:
 ```swift
 // Only include child relationships (default)
-@FluentContent(includeRelations: .children)
+@FluentDTO(includeRelations: .children)
 final class Post: Model {
     @Children(for: \.$post) var comments: [Comment]
     @Parent(key: "author_id") var author: User  // Will be ignored
 }
 
 // Only include parent relationships
-@FluentContent(includeRelations: .parent)
+@FluentDTO(includeRelations: .parent)
 final class Comment: Model {
     @Parent(key: "post_id") var post: Post
     @Children(for: \.$comment) var reactions: [Reaction]  // Will be ignored
 }
 
 // Include both parent and child relationships
-@FluentContent(includeRelations: .all)  // Same as [.parent, .children]
+@FluentDTO(includeRelations: .all)  // Same as [.parent, .children]
 final class Category: Model {
     @Parent(key: "parent_id") var parent: Category
     @Children(for: \.$parent) var subcategories: [Category]
 }
 
 // Include no relationships
-@FluentContent(includeRelations: .none)
+@FluentDTO(includeRelations: .none)
 final class Settings: Model {
     @Parent(key: "user_id") var user: User  // Will be ignored
     @Children(for: \.$settings) var logs: [Log]  // Will be ignored
 }
 
 // Mix and match relationships
-@FluentContent(includeRelations: [.parent, .children])  // Same as .all
+@FluentDTO(includeRelations: [.parent, .children])  // Same as .all
 final class CustomModel: Model {
     @Parent(key: "parent_id") var parent: Parent
     @Children(for: \.$parent) var children: [Child]
@@ -124,31 +133,31 @@ final class CustomModel: Model {
 Control property mutability:
 ```swift
 // Immutable properties with 'let' (default)
-@FluentContent(immutable: true)
+@FluentDTO(immutable: true)
 final class Product: Model {
     @ID var id: UUID?
     @Field(key: "name") var name: String
     @Field(key: "price") var price: Double
 }
 // Generated with 'let' properties:
-// struct ProductContent: CodableContent, Equatable, Sendable {
+// struct ProductDTO: CodableDTO, Equatable, Sendable {
 //     let id: UUID?
 //     let name: String
 //     let price: Double
 // }
 
 // Mutable properties with 'var'
-@FluentContent(immutable: false)
+@FluentDTO(immutable: false)
 final class Cart: Model {
     @ID var id: UUID?
     @Field(key: "total") var total: Double
     @Parent(key: "user_id") var user: User
 }
 // Generated with 'var' properties:
-// struct CartContent: CodableContent, Equatable, Sendable {
+// struct CartDTO: CodableDTO, Equatable, Sendable {
 //     var id: UUID?
 //     var total: Double
-//     var user: UserContent
+//     var user: UserDTO
 // }
 ```
 
@@ -156,44 +165,44 @@ final class Cart: Model {
 Set visibility levels:
 ```swift
 // Public access (default)
-@FluentContent(accessLevel: .public)
+@FluentDTO(accessLevel: .public)
 final class Article: Model {
     @ID var id: UUID?
     @Field(key: "title") var title: String
 }
 // Generated with public access:
-// public struct ArticleContent: CodableContent, Equatable, Sendable { ... }
-// public func toContent() -> ArticleContent { ... }
+// public struct ArticleDTO: CodableDTO, Equatable, Sendable { ... }
+// public func toDTO() -> ArticleDTO { ... }
 
 // Internal access
-@FluentContent(accessLevel: .internal)
+@FluentDTO(accessLevel: .internal)
 final class Draft: Model {
     @ID var id: UUID?
     @Field(key: "content") var content: String
 }
 // Generated with internal access:
-// struct DraftContent: CodableContent, Equatable, Sendable { ... }
-// func toContent() -> DraftContent { ... }
+// struct DraftDTO: CodableDTO, Equatable, Sendable { ... }
+// func toDTO() -> DraftDTO { ... }
 
 // FilePrivate access for internal caching
-@FluentContent(accessLevel: .fileprivate)
+@FluentDTO(accessLevel: .fileprivate)
 final class Cache: Model {
     @ID var id: UUID?
     @Field(key: "data") var data: Data
 }
 // Generated with fileprivate access:
-// fileprivate struct CacheContent: CodableContent, Equatable, Sendable { ... }
-// fileprivate func toContent() -> CacheContent { ... }
+// fileprivate struct CacheDTO: CodableDTO, Equatable, Sendable { ... }
+// fileprivate func toDTO() -> CacheDTO { ... }
 
 // Private access for implementation details
-@FluentContent(accessLevel: .private)
+@FluentDTO(accessLevel: .private)
 final class InternalLog: Model {
     @ID var id: UUID?
     @Field(key: "message") var message: String
 }
 // Generated with private access:
-// private struct InternalLogContent: CodableContent, Equatable, Sendable { ... }
-// private func toContent() -> InternalLogContent { ... }
+// private struct InternalLogDTO: CodableDTO, Equatable, Sendable { ... }
+// private func toDTO() -> InternalLogDTO { ... }
 ```
 
 ### Field Exclusion
@@ -202,42 +211,42 @@ Protect sensitive data:
 final class User: Model {
     @Field(key: "email") var email: String
     
-    @FluentContentIgnore  // Exclude from generated content structure
+    @FluentDTOIgnore  // Exclude from generated DTO
     @Field(key: "password_hash") var passwordHash: String
 }
 ```
 
 ### Protocol Conformances
-Control which protocols your content types conform to:
+Control which protocols your DTOs conform to:
 ```swift
 // All protocols (default)
-@FluentContent(conformances: .all)  // Equatable, Hashable, and Sendable
+@FluentDTO(conformances: .all)  // Equatable, Hashable, and Sendable
 
 // Single protocol
-@FluentContent(conformances: .equatable)  // Only Equatable
-@FluentContent(conformances: .hashable)   // Only Hashable
-@FluentContent(conformances: .sendable)   // Only Sendable
+@FluentDTO(conformances: .equatable)  // Only Equatable
+@FluentDTO(conformances: .hashable)   // Only Hashable
+@FluentDTO(conformances: .sendable)   // Only Sendable
 
 // Multiple protocols
-@FluentContent(conformances: [.equatable, .hashable])     // Equatable and Hashable
-@FluentContent(conformances: [.equatable, .sendable])     // Equatable and Sendable
-@FluentContent(conformances: [.hashable, .sendable])      // Hashable and Sendable
+@FluentDTO(conformances: [.equatable, .hashable])     // Equatable and Hashable
+@FluentDTO(conformances: [.equatable, .sendable])     // Equatable and Sendable
+@FluentDTO(conformances: [.hashable, .sendable])      // Hashable and Sendable
 
 // No additional protocols
-@FluentContent(conformances: .none)  // Only CodableContent
+@FluentDTO(conformances: .none)  // Only CodableDTO
 ```
 
 ### Global Defaults
-Configure default behavior for all @FluentContent usages in your app:
+Configure default behavior for all @FluentDTO usages in your app:
 ```swift
 // In your app's setup code
-FluentContentDefaults.immutable = false        // Make all content types mutable by default
-FluentContentDefaults.includeRelations = .all  // Include all relationships by default
-FluentContentDefaults.accessLevel = .internal  // Use internal access by default
-FluentContentDefaults.conformances = [.equatable, .hashable]  // Default protocol conformances
+FluentDTODefaults.immutable = false        // Make all DTOs mutable by default
+FluentDTODefaults.includeRelations = .all  // Include all relationships by default
+FluentDTODefaults.accessLevel = .internal  // Use internal access by default
+FluentDTODefaults.conformances = [.equatable, .hashable]  // Default protocol conformances
 
-// Individual @FluentContent attributes still override the defaults
-@FluentContent(immutable: true)  // This specific type will be immutable
+// Individual @FluentDTO attributes still override the defaults
+@FluentDTO(immutable: true)  // This specific type will be immutable
 ```
 
 ## 📚 Advanced Usage
@@ -275,7 +284,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ❤️ Support
 
-If you find FluentContent helpful in your projects, please consider:
+If you find FluentDTO helpful in your projects, please consider:
 - Giving it a ⭐️ on GitHub
 - Sharing it with others
 - Contributing back to the project

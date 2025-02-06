@@ -1,6 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import FluentContentMacroShared
+import FluentDTOMacroShared
 
 /// Parser for macro arguments and model declarations.
 ///
@@ -8,7 +8,7 @@ import FluentContentMacroShared
 /// information from model declarations in the macro system.
 struct MacroArgumentParser {
     /// Configuration options parsed from macro arguments
-    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel, conformances: ContentConformances)
+    typealias MacroConfig = (isImmutable: Bool, includeRelations: [String], accessLevel: AccessLevel, conformances: DTOConformances)
 
     /// Information about the model declaration being processed
     typealias ModelInfo = (name: String, members: MemberBlockSyntax?, accessLevel: String)
@@ -19,10 +19,10 @@ struct MacroArgumentParser {
     static func parseMacroArguments(
         from attr: AttributeSyntax
     ) throws -> MacroConfig {
-        var isImmutable = FluentContentDefaults.immutable
-        var relationNames = wrappersForCase(FluentContentDefaults.includeRelations)
-        var accessLevel = FluentContentDefaults.accessLevel
-        var conformances = FluentContentDefaults.conformances
+        var isImmutable = FluentDTODefaults.immutable
+        var relationNames = wrappersForCase(FluentDTODefaults.includeRelations)
+        var accessLevel = FluentDTODefaults.accessLevel
+        var conformances = FluentDTODefaults.conformances
 
         guard let args = attr.arguments?.as(LabeledExprListSyntax.self) else {
             return (isImmutable, relationNames, accessLevel, conformances)
@@ -148,9 +148,9 @@ struct MacroArgumentParser {
         return "internal"
     }
 
-    private static func parseConformances(_ expr: some ExprSyntaxProtocol) throws -> ContentConformances {
+    private static func parseConformances(_ expr: some ExprSyntaxProtocol) throws -> DTOConformances {
         if let arrayExpr = expr.as(ArrayExprSyntax.self) {
-            var conformances: ContentConformances = []
+            var conformances: DTOConformances = []
             for element in arrayExpr.elements {
                 if let memAccess = element.expression.as(MemberAccessExprSyntax.self) {
                     switch memAccess.declName.baseName.text {

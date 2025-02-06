@@ -4,7 +4,7 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "FluentContentMacro",
+    name: "fluent-dto-macro",
     platforms: [
         .iOS(.v13),
         .macOS(.v10_15),
@@ -13,8 +13,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "FluentContentMacro",
-            targets: ["FluentContentMacro"]
+            name: "FluentDTOMacro",
+            targets: ["FluentDTOMacro"]
         ),
     ],
     dependencies: [
@@ -22,35 +22,39 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-macro-testing", branch: "main"),
     ],
     targets: [
+        // Macro implementation
         .macro(
-            name: "FluentContentMacros",
+            name: "FluentDTOMacroPlugin",
             dependencies: [
-                "FluentContentMacroShared",
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                "FluentDTOMacroShared"
             ]
         ),
+
+        // Library that exposes the macro
         .target(
-            name: "FluentContentMacro",
+            name: "FluentDTOMacro",
             dependencies: [
-                "FluentContentMacroShared",
-                "FluentContentMacros"
+                "FluentDTOMacroPlugin",
+                "FluentDTOMacroShared"
             ]
         ),
+
+        // Shared types between the macro and the library
         .target(
-            name: "FluentContentMacroShared",
-            dependencies: [
-            ]
+            name: "FluentDTOMacroShared"
         ),
+
+        // Test target
         .testTarget(
-            name: "FluentContentMacroTests",
+            name: "FluentDTOMacroTests",
             dependencies: [
-                "FluentContentMacro",
-                "FluentContentMacros",
+                "FluentDTOMacro",
+                "FluentDTOMacroPlugin",
                 .product(name: "MacroTesting", package: "swift-macro-testing"),
-            ],
-            path: "Tests/FluentContentMacroTests"
-        )
+            ]
+        ),
     ]
 )
 

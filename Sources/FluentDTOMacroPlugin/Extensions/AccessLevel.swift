@@ -1,4 +1,4 @@
-import FluentContentMacroShared
+import FluentDTOMacroShared
 
 extension AccessLevel {
     func resolvedAccessLevel(modelAccess: String) -> String {
