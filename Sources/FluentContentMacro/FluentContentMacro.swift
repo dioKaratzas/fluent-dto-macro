@@ -68,8 +68,7 @@ import FluentContentMacroShared
  extension User { public func toDTO() -> UserDTO { ... } }
  ```
  */
-@attached(peer, names: arbitrary)
-@attached(extension, names: arbitrary)
+@attached(member, names: arbitrary)
 public macro FluentContent(
     /// If `true`, the generated struct uses `let` instead of `var`.
     immutable: Bool = FluentContentDefaults.immutable,

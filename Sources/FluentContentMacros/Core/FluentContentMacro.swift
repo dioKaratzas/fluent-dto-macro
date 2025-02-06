@@ -61,17 +61,10 @@ import SwiftCompilerPlugin
  extension User { public func toDTO() -> UserDTO { ... } }
  ```
  */
-public struct FluentContentMacro: PeerMacro, ExtensionMacro {
-    // MARK: - Peer Macro: Generate content struct
-    /// Expands the macro to generate a peer content struct that mirrors the model's structure.
-    /// - Parameters:
-    ///   - node: The attribute syntax node representing the macro
-    ///   - declaration: The declaration the macro is attached to
-    ///   - context: The macro expansion context
-    /// - Returns: An array of declarations to be added as peers
+public struct FluentContentMacro: MemberMacro {
     public static func expansion(
         of node: SwiftSyntax.AttributeSyntax,
-        providingPeersOf declaration: some SwiftSyntax.DeclSyntaxProtocol,
+        providingMembersOf declaration: some SwiftSyntax.DeclGroupSyntax,
         in context: some SwiftSyntaxMacros.MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let (isImmutable, includeRelations, accessLevel, conformances, contentSuffix) = try MacroArgumentParser.parseMacroArguments(from: node)
@@ -82,8 +75,10 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
         }
 
         let structAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
-        let contentName = "\(modelName)\(contentSuffix)"
+        let contentName = "\(contentSuffix)"
         let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
+        
+        // Build the nested content struct
         let structDecl = ContentStructBuilder.buildContentStruct(
             name: contentName,
             properties: props,
@@ -93,46 +88,17 @@ public struct FluentContentMacro: PeerMacro, ExtensionMacro {
             contentSuffix: contentSuffix
         )
 
-        return [DeclSyntax(stringLiteral: structDecl)]
-    }
-
-    // MARK: - Extension Macro: Generate conversion method
-    /// Expands the macro to add a `toContent()` method to the model.
-    /// - Parameters:
-    ///   - node: The attribute syntax node representing the macro
-    ///   - declaration: The declaration group the macro is attached to
-    ///   - type: The type to extend
-    ///   - protocols: The protocols to conform to
-    ///   - context: The macro expansion context
-    /// - Returns: An array of extension declarations
-    public static func expansion(
-        of node: SwiftSyntax.AttributeSyntax,
-        attachedTo declaration: some SwiftSyntax.DeclGroupSyntax,
-        providingExtensionsOf type: some SwiftSyntax.TypeSyntaxProtocol,
-        conformingTo protocols: [SwiftSyntax.TypeSyntax],
-        in context: some SwiftSyntaxMacros.MacroExpansionContext
-    ) throws -> [ExtensionDeclSyntax] {
-        let (_, includeRelations, accessLevel, _, contentSuffix) = try MacroArgumentParser.parseMacroArguments(from: node)
-        let (modelName, members, modelAccess) = MacroArgumentParser.extractModelDeclInfo(declaration: declaration)
-        guard !modelName.isEmpty else {
-            return []
-        }
-
-        let methodAccess = accessLevel.resolvedAccessLevel(modelAccess: modelAccess)
-        let props = PropertyExtractor.extractProperties(from: members, includeRelations: includeRelations)
-        let contentName = "\(modelName)\(contentSuffix)"
-
-        // Generate method name based on suffix (e.g., toDTO() for DTO suffix)
-        let methodName = "to\(contentSuffix)"
-
+        // Build the conversion method
         let methodDecl = ContentStructBuilder.buildConversionMethod(
             properties: props,
             contentName: contentName,
-            methodName: methodName,
-            access: methodAccess
+            methodName: "toContent",
+            access: structAccess
         )
 
-        let extDecl = try ExtensionDeclSyntax("extension \(raw: modelName) {\n\(raw: methodDecl)\n}")
-        return [extDecl]
+        return [
+            DeclSyntax(stringLiteral: structDecl),
+            DeclSyntax(stringLiteral: methodDecl)
+        ]
     }
 }
