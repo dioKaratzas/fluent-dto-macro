@@ -1,6 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import FluentContentMacroShared
+import FluentDTOMacroShared
 
 /// Extracts and analyzes properties from Swift declarations
 struct PropertyExtractor {
@@ -28,7 +28,7 @@ struct PropertyExtractor {
 
     // MARK: - Private Helpers
 
-    /// Determines if a property should be included in the generated content
+    /// Determines if a property should be included in the generated DTO
     private static func shouldIncludeProperty(
         _ member: MemberBlockItemSyntax,
         includeRelations: [String]
@@ -40,7 +40,7 @@ struct PropertyExtractor {
         let attributeWrappers = extractAttributeWrappers(from: propertyDecl.decl.attributes)
 
         // Skip if property is marked to be ignored
-        if attributeWrappers.contains("FluentContentIgnore") {
+        if attributeWrappers.contains("FluentDTOIgnore") {
             return false
         }
 

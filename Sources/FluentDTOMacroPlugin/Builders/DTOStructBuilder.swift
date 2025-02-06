@@ -1,29 +1,29 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
-import FluentContentMacroShared
+import FluentDTOMacroShared
 
-struct ContentStructBuilder {
-    static func buildContentStruct(
+struct DTOStructBuilder {
+    static func buildDTOStruct(
         name: String,
         properties: [PropertyExtractor.PropertyInfo],
         access: String,
         isImmutable: Bool,
-        conformances: ContentConformances
+        conformances: DTOConformances
     ) -> String {
         let keyword = isImmutable ? "let" : "var"
 
         let propertyLines = properties.map { name, baseType, isOpt, isArr, isRelationship in
             let optionalMark = isOpt ? "?" : ""
             let type = if isRelationship {
-                isArr ? "[\(baseType)Content]" : "\(baseType)Content"
+                isArr ? "[\(baseType)DTO]" : "\(baseType)DTO"
             } else {
                 isArr ? "[\(baseType)]" : baseType
             }
             return "\(access) \(keyword) \(name): \(type)\(optionalMark)"
         }.joined(separator: "\n")
 
-        // Always start with CodableContent
-        var protocols = ["CodableContent"]
+        // Always start with CodableDTO
+        var protocols = ["CodableDTO"]
 
         // Add selected conformances
         if conformances.contains(.equatable) {
@@ -51,21 +51,21 @@ struct ContentStructBuilder {
         }
     }
 
-    static func buildToContentMethod(
+    static func buildToDTOMethod(
         properties: [PropertyExtractor.PropertyInfo],
-        contentName: String,
+        dtoName: String,
         access: String
     ) -> String {
         if properties.isEmpty {
-            return "\(access) func toContent() -> \(contentName) { .init() }"
+            return "\(access) func toDTO() -> \(dtoName) { .init() }"
         }
 
         let initArgs = properties.map { name, _, isOpt, isArr, isRelationship in
             if isRelationship {
                 if isArr {
-                    isOpt ? "\(name): \(name)?.map { $0.toContent() }" : "\(name): \(name).map { $0.toContent() }"
+                    isOpt ? "\(name): \(name)?.map { $0.toDTO() }" : "\(name): \(name).map { $0.toDTO() }"
                 } else {
-                    isOpt ? "\(name): \(name)?.toContent()" : "\(name): \(name).toContent()"
+                    isOpt ? "\(name): \(name)?.toDTO()" : "\(name): \(name).toDTO()"
                 }
             } else {
                 "\(name): \(name)"
@@ -73,7 +73,7 @@ struct ContentStructBuilder {
         }.joined(separator: ",\n")
 
         return """
-        \(access) func toContent() -> \(contentName) {
+        \(access) func toDTO() -> \(dtoName) {
             .init(
                 \(initArgs)
             )
