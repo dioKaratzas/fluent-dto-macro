@@ -11,8 +11,8 @@ public enum FluentDTODefaults {
     /// Specifies which Fluent relationships should be included in the generated DTO.
     /// Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...DTO` types.
     /// Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentDTOIgnore`.
-    /// Defaults to `.children`.
-    nonisolated(unsafe) public static var includeRelations: IncludeRelations = .children
+    /// Defaults to `.all`.
+    nonisolated(unsafe) public static var includeRelations: IncludeRelations = .all
 
     /// The desired access level for the generated `DTO` struct and `toDTO()` method.
     /// Defaults to `.public`, but you can specify `.internal`, `.fileprivate`, or `.private` to restrict visibility.
