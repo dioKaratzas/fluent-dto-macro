@@ -13,12 +13,13 @@ struct DTOStructBuilder {
         let keyword = isImmutable ? "let" : "var"
 
         let propertyLines = properties.map { name, baseType, isOpt, isArr, isRelationship in
-            let optionalMark = isOpt ? "?" : ""
             let type = if isRelationship {
                 isArr ? "[\(baseType)DTO]" : "\(baseType)DTO"
             } else {
                 isArr ? "[\(baseType)]" : baseType
             }
+            // Make all relationship properties optional, keep original optionality for non-relationships
+            let optionalMark = isRelationship ? "?" : (isOpt ? "?" : "")
             return "\(access) \(keyword) \(name): \(type)\(optionalMark)"
         }.joined(separator: "\n")
 
@@ -63,9 +64,15 @@ struct DTOStructBuilder {
         let initArgs = properties.map { name, _, isOpt, isArr, isRelationship in
             if isRelationship {
                 if isArr {
-                    isOpt ? "\(name): \(name)?.map { $0.toDTO() }" : "\(name): \(name).map { $0.toDTO() }"
+                    // Check if the relationship value exists before mapping
+                    """
+                    \(name): $\(name).value != nil ? \(name).map { $0.toDTO() } : []
+                    """
                 } else {
-                    isOpt ? "\(name): \(name)?.toDTO()" : "\(name): \(name).toDTO()"
+                    // Check if the relationship value exists before converting
+                    """
+                    \(name): $\(name).value != nil ? \(name)\(isOpt ? "?" : "").toDTO() : nil
+                    """
                 }
             } else {
                 "\(name): \(name)"

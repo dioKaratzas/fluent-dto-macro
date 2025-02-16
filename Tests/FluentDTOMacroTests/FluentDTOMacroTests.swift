@@ -226,13 +226,13 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let author: UserDTO
+                        public let author: UserDTO?
                     }
 
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toDTO()
+                                author: $author.value != nil ? author.toDTO() : nil
                             )
                         }
                     }
@@ -258,13 +258,13 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let author: UserDTO
+                        public let author: UserDTO?
                     }
 
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toDTO()
+                                author: $author.value != nil ? author.toDTO() : nil
                             )
                         }
                     }
@@ -290,15 +290,15 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let comments: [CommentDTO]
+                        public let comments: [CommentDTO]?
                     }
 
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                comments: comments.map {
+                                comments: $comments.value != nil ? comments.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -324,17 +324,17 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let author: UserDTO
-                        public let comments: [CommentDTO]
+                        public let author: UserDTO?
+                        public let comments: [CommentDTO]?
                     }
 
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toDTO(),
-                                comments: comments.map {
+                                author: $author.value != nil ? author.toDTO() : nil,
+                                comments: $comments.value != nil ? comments.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -360,17 +360,17 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let author: UserDTO
-                        public let comments: [CommentDTO]
+                        public let author: UserDTO?
+                        public let comments: [CommentDTO]?
                     }
 
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toDTO(),
-                                comments: comments.map {
+                                author: $author.value != nil ? author.toDTO() : nil,
+                                comments: $comments.value != nil ? comments.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -434,7 +434,7 @@
                     extension Comment {
                         public func toDTO() -> CommentDTO {
                             .init(
-                                post: post?.toDTO()
+                                post: $post.value != nil ? post?.toDTO() : nil
                             )
                         }
                     }
@@ -460,15 +460,15 @@
                     }
 
                     public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let roles: [RoleDTO]
+                        public let roles: [RoleDTO]?
                     }
 
                     extension User {
                         public func toDTO() -> UserDTO {
                             .init(
-                                roles: roles.map {
+                                roles: $roles.value != nil ? roles.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -500,7 +500,7 @@
                     }
 
                     public struct PostDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let author: UserDTO
+                        public let author: UserDTO?
                         public let title: String
                         public let createdAt: Date
                         public let normalProperty: String
@@ -509,7 +509,7 @@
                     extension Post {
                         public func toDTO() -> PostDTO {
                             .init(
-                                author: author.toDTO(),
+                                author: $author.value != nil ? author.toDTO() : nil,
                                 title: title,
                                 createdAt: createdAt,
                                 normalProperty: normalProperty
@@ -725,7 +725,7 @@
                     public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
                         public let id: UUID?
                         public let username: String
-                        public let posts: [PostDTO]
+                        public let posts: [PostDTO]?
                     }
 
                     extension User {
@@ -733,9 +733,9 @@
                             .init(
                                 id: id,
                                 username: username,
-                                posts: posts.map {
+                                posts: $posts.value != nil ? posts.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -763,15 +763,15 @@
                     }
 
                     public struct EmptyWithRelationsDTO: CodableDTO, Equatable, Hashable, Sendable {
-                        public let children: [ChildDTO]
+                        public let children: [ChildDTO]?
                     }
 
                     extension EmptyWithRelations {
                         public func toDTO() -> EmptyWithRelationsDTO {
                             .init(
-                                children: children.map {
+                                children: $children.value != nil ? children.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }
@@ -920,6 +920,104 @@
                                 metadata: metadata,
                                 createdAt: createdAt,
                                 compositeId: compositeId
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Handles complex types with specific conformances")
+            func complexTypesWithSpecificConformances() {
+                assertMacro {
+                    """
+                    @FluentDTO(conformances: [.equatable, .hashable])
+                    class User {
+                        var name: String?
+                        var age: Int
+                        var tags: [String]
+                        @Children(for: \\.$user) var posts: [Post]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        var name: String?
+                        var age: Int
+                        var tags: [String]
+                        @Children(for: \\.$user) var posts: [Post]
+                    }
+
+                    public struct UserDTO: CodableDTO, Equatable, Hashable {
+                        public let name: String?
+                        public let age: Int
+                        public let tags: [String]
+                        public let posts: [PostDTO]?
+                    }
+
+                    extension User {
+                        public func toDTO() -> UserDTO {
+                            .init(
+                                name: name,
+                                age: age,
+                                tags: tags,
+                                posts: $posts.value != nil ? posts.map {
+                                    $0.toDTO()
+                                } : []
+                            )
+                        }
+                    }
+                    """
+                }
+            }
+
+            @Test("Handles multiple relationships with mixed types")
+            func handlesMultipleRelationshipsWithMixedTypes() {
+                assertMacro {
+                    """
+                    @FluentDTO(includeRelations: .all)
+                    class User {
+                        @ID(key: .id) var id: UUID?
+                        @Field(key: "username") var username: String
+                        @Parent(key: "team_id") var team: Team
+                        @OptionalParent(key: "department_id") var department: Department?
+                        @Children(for: \\.$user) var posts: [Post]
+                        @Siblings(through: UserRole.self, from: \\.$user, to: \\.$role) var roles: [Role]
+                    }
+                    """
+                } expansion: {
+                    """
+                    class User {
+                        @ID(key: .id) var id: UUID?
+                        @Field(key: "username") var username: String
+                        @Parent(key: "team_id") var team: Team
+                        @OptionalParent(key: "department_id") var department: Department?
+                        @Children(for: \\.$user) var posts: [Post]
+                        @Siblings(through: UserRole.self, from: \\.$user, to: \\.$role) var roles: [Role]
+                    }
+
+                    public struct UserDTO: CodableDTO, Equatable, Hashable, Sendable {
+                        public let id: UUID?
+                        public let username: String
+                        public let team: TeamDTO?
+                        public let department: DepartmentDTO?
+                        public let posts: [PostDTO]?
+                        public let roles: [RoleDTO]?
+                    }
+
+                    extension User {
+                        public func toDTO() -> UserDTO {
+                            .init(
+                                id: id,
+                                username: username,
+                                team: $team.value != nil ? team.toDTO() : nil,
+                                department: $department.value != nil ? department?.toDTO() : nil,
+                                posts: $posts.value != nil ? posts.map {
+                                    $0.toDTO()
+                                } : [],
+                                roles: $roles.value != nil ? roles.map {
+                                    $0.toDTO()
+                                } : []
                             )
                         }
                     }
@@ -1256,7 +1354,7 @@
                         public let name: String?
                         public let age: Int
                         public let tags: [String]
-                        public let posts: [PostDTO]
+                        public let posts: [PostDTO]?
                     }
 
                     extension User {
@@ -1265,9 +1363,9 @@
                                 name: name,
                                 age: age,
                                 tags: tags,
-                                posts: posts.map {
+                                posts: $posts.value != nil ? posts.map {
                                     $0.toDTO()
-                                }
+                                } : []
                             )
                         }
                     }

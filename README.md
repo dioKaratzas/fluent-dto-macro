@@ -249,17 +249,6 @@ FluentDTODefaults.conformances = [.equatable, .hashable]  // Default protocol co
 @FluentDTO(immutable: true)  // This specific type will be immutable
 ```
 
-## 📚 Advanced Usage
-
-For comprehensive examples covering:
-- Relationship cycles and how to handle them
-- Complex hierarchical structures
-- Many-to-many relationships
-- Self-referential models
-- Common pitfalls and solutions
-
-See our detailed [EXAMPLES.md](EXAMPLES.md) guide.
-
 ## 🎯 Best Practices
 
 1. Prefer array relationships for better type safety

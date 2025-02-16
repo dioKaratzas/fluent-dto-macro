@@ -14,7 +14,7 @@ import FluentDTOMacroShared
   Specifies which Fluent relationships should be transformed into nested DTOs.
   Relationship wrappers (such as `@Children`, `@Parent`, etc.) generate nested `...DTO` types.
   Normal fields (e.g., `@Field`, `@ID`) are always included unless explicitly ignored with `@FluentDTOIgnore`.
-  Defaults to `.children`.
+  Defaults to `.all`.
 
   - **accessLevel**:
   The desired access level for the generated `DTO` struct and `toDTO()` method.
